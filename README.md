@@ -230,3 +230,35 @@ winch 10.1 s. The earlier sections above still describe the
 pre-polish scoring (+300/+500/+200/+400) and the first verified flight
 (score 1400, steadiness 54%, winch 10.2 s); the ×10 scale and the
 numbers in this section are the current ones.
+
+## Coordinator verification — 26 Nov 2026 (independent re-capture)
+
+The polish coordinator re-ran the capture from the final code (a
+scratch copy, so the repo stayed clean) and verified the numbers
+above independently — nothing below is taken on the worker's word:
+
+- **checks.json: 70 checks, 0 failures** (same as the live file on
+  Pages). The re-captured shots show the same record: callsign
+  LIFT-07, score 22,000, rescued 1/7, stars 2/21, flight 2:51–2:53.
+- **CDP flight (my run):** a real rescue flown end-to-end through
+  the game's own input path — survivor 1 delivered for real
+  (full-rescue score 14,000 = 3000 lock + 5000 hook + 2000 aboard +
+  4000 soft), second survivor on the hook at 22,000, steadiness 73,
+  winch 10.0 s, sink 0.69 m/s, fuel 78.9% at delivery, touchdown
+  3 kt, off-centreline 2.6 m, hover error 3.1 m, delivered survivor
+  MARC, 38. Zero console errors, zero failed network requests.
+- **Polish checks confirmed in my run:** no radio line truncates
+  (all 4 lines fit); the storm decision banner is visible and
+  Digit2 = FINISH answers on the real input path; the coaching
+  banner reads "SURVIVOR ON HOOK — REEL IN WITH SPACE"; the
+  landing-check panel is live with targets; the chart names the
+  valley (river + road + pads); the storm front carries its live
+  distance ("STORM FRONT — 0.5 NM BEHIND"); the next survivor is
+  named on the checklist (ANNA, 41); the warning-lights gauge has a
+  lit lamp; the cover shows the ring ahead and the lit hospital pad
+  ahead; the score box does not overlap the storm box.
+- **Remote tree + Pages (verified at a0eb608):** main + master both
+  at a0eb608, 34 paths, main.ts in the pushed commit, no dev/
+  entries, all 4 screenshots + contact-sheet + checks.json present;
+  Pages returns HTTP 200 and the live HTML contains the new content
+  (count-banner, hud-coach, landing-check).
