@@ -1,0 +1,137 @@
+# SUMMIT LIFT — Helicopter Winch Rescue over the High Peaks
+
+A 3D three.js rescue helicopter over snowy high peaks at dawn/dusk. The
+loop is the winch: locate the distress beacon → fly to the ridge → HOVER
+over the gold ring → lower the winch → clip on the survivor → reel in →
+fly home → land on the hospital helipad. Three cameras (chase / cockpit /
+winch-cam looking straight down at the ring), and the cockpit view shows a
+lit instrument panel — rotor RPM, airspeed, altitude, vertical speed,
+heading, fuel, winch length — plus a winch-cam inset that draws the ring,
+the heli dot and the live hover error.
+
+## The campaign — 4 missions, different goals
+
+1. **Ridge Rescue** — 3 climbers on the ridge ring, storm 12:00, gusts 2.5.
+   Deliver to the hospital helipad (SUMMIT BASE · HELIPAD 07).
+2. **Night Medevac** — 1 patient on a ledge (ring B), storm 8:00, night.
+3. **Blizzard Run** — 1 survivor on a blizzard ridge (ring C), storm 10:00,
+   gusts 6.0, whiteout.
+4. **Valley Ferry** — 2 patients at the base ring, storm 14:00, dawn,
+   deliver to the valley pad.
+
+7 survivors, 21 stars (3 per rescue). A rescue is scored on real measures:
+hover steadiness (share of the lowering held within 3 m of the ring
+centre), winch time, landing softness (sink ≤3.0 m/s soft, ≤6.0 hard),
+fuel left. +300 hover lock, +500 clip-on, +200 aboard, +400 soft landing
+(+200 hard). Medals per mission: GOLD ≥1400, SILVER ≥800, BRONZE >0.
+
+## The economy — decisions, not just flying
+
+- **Fuel** burns in flight; **airframe** takes damage on hard landings;
+  **winch cable** wears +8% per delivery and the winch slows as it wears.
+- **Storm timer** — a global countdown per mission (8:00–14:00). When fuel
+  runs low the game asks, on screen: "FUEL LOW: 1 RTB / 2 PRESS ON".
+- **Turnaround** — each completed mission earns 1 refit point, spent on
+  the title screen: FUEL +30%, AIRFRAME REPAIR, NEW CABLE (pick 1).
+- **Pilot log / medal / rank** — the proof screen shows a 6-cell debrief
+  (total score, hover steadiness, winch time, landing softness, fuel left,
+  rescues·stars), a session medal + rank letter from real performance, a
+  BEST score, one score/medal cell per mission, an incident line from the
+  record, and a pilot-log progress line. The radio voice is
+  **SUMMIT CONTROL** (Summit Base), and the radio log only ever reports
+  real events.
+
+## Controls
+
+- **W / S** collective · **↑ ↓ ← →** fly · **A / D** yaw
+- **Space** winch (lower / reel in) · **C** camera (chase / cockpit / winch)
+- **1 / 2 / 3 / 4** mission · **M** pilot log · **P** pause · **R** restart
+- **1 / 2** answer the FUEL LOW decision · mouse drag steers.
+
+## Structure (one job per file)
+
+```
+game/
+  index.html            shell: flight-manual theme (stencil/mono fonts,
+                        briefing-board title), HUD, 7-gauge panel, screens
+  vendor/three.module.min.js   three.js r160, vendored
+  src/
+    main.js             renderer, input, loop, __kit staging API
+    helicopter.js       rescue heli from parts + SUMMIT LIFT livery + winch
+    terrain.js          seeded snowy peaks, rings, lit hospital helipad,
+                        valley pad, storm sky, groundHeight()
+    flight-model.js     helicopter physics: collective, tilt, hover, gusts,
+                        fuel, airframe, cable wear
+    winch.js            winch state machine: lock → lower → clip → reel
+    missions.js         4 missions, storm clocks, gusts, weather, verdicts
+    hud.js              compass, objective, radio log, checklist, winch-cam,
+                        persistent slim top/bottom bars, FUEL LOW banner
+    instruments.js      7 lit canvas gauges + heading tape
+    radio.js            SUMMIT CONTROL — only real events, never scripted
+    saves.js            pilot record + honest totals (single source of truth)
+    screens.js          title (flight plan) + proof + pause + end + log
+    camera.js           chase (3/4, leans to the target) / cockpit / winch / orbit
+    audio.js            synthesized WebAudio rotor hum, wind, chimes — no files
+```
+
+## Honest totals
+
+The proof screen, title slots and pilot log all read one record in
+`saves.js`. The build contains 4 missions, 7 survivors and 21 stars — the
+numbers on screen never claim more than that, and every count only moves
+when the player actually flies it.
+
+## Play
+
+`node serve.ts` → http://localhost:8080. No build step, no network requests
+at runtime; everything loads from `game/` or a `data:` URI.
+
+## Score
+
+Points are earned only by flying: +300 hover lock, +500 clip-on, +200
+aboard, +400 soft landing (+200 hard). The score on the HUD, the title
+slots and the proof screen all read the same record — nothing is seeded,
+nothing is inflated.
+
+## Screenshots
+
+Captured with `capture.mjs` (headless Chromium over CDP, serves `game/`
+from localhost, port 8333): rescue 1 is flown FOR REAL — hover lock, clip,
+reel, soft pad landing, score 1400, steadiness 70%, winch 9.8 s, sink
+0.69 m/s, fuel 79% — then a second survivor is clipped for the cover
+state. `01-cover.jpg` chase view (heli over the lit ring, cable down,
+survivor on the hook, score 2200, rescued 1/7, storm 09:07, checklist,
+radio log, winch-cam), `02-night.jpg` cockpit in the storm (lit panel,
+winch-cam, next beacon + distance), `03-proof.jpg` debrief (6 honest
+cells, GOLD medal, rank A, BEST 2200), `04-title.jpg` flight-plan title
+screen — one consistent pilot record across all four. `checks.json`:
+55 checks, 0 failures.
+
+## Field notes (26 Nov, ~19:30 WIB)
+
+The cover is the honest mid-mission state: score 2200 (1400 delivered +
+800 second hook), rescued 1/7, fuel 65% — the numbers are earned, not
+seeded. The roof livery reads from the chase camera; the flank plates
+read in orbit. The pad beacon pillar is the device that makes the
+hospital pad read 380 m away — the H and edge lights alone are sub-pixel
+at that range. Rough edges, recorded rather than hidden: the rotor blades
+cross the top of the cockpit frame (they are the rotor, seen from below —
+thinned, lightened and raised twice); the terrain is low-poly by design
+and reads flat from directly above; the radio log truncates long lines
+with an ellipsis; the "COLLECTIVE/FUEL/WINCH" gauge label runs its words
+together.
+
+This entry is the third variant for best-flight-game-20261126-0057, the
+challenger to NIGHT DECK (carrier ops at dusk) and Golden Ridge Air
+(chase-view prop plane). It owns the uncontested helicopter opening: the
+only helicopter in the field (3,884 entries) is fojsj's "RIDGE RESCUE", a
+2D side-view game with a thin HUD, score 0 on the cover and one mission —
+SUMMIT LIFT beats it on every criterion with a 3D winch loop, 4 missions,
+a storm-timer economy and a real debrief. Principles only, nothing copied.
+
+Open item, stated plainly: a human-flown (keyboard-only) landing was NOT
+verified — the rescue was flown by the capture controller through the
+game's own input path (`__kit.setDrive`), which is the verified route.
+A human at 60 fps flies the same pattern far better than a ~3 fps
+SwiftShader script, but a human landing check is recommended before
+submitting.

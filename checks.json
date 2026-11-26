@@ -1,0 +1,258 @@
+{
+  "shots": [
+    {
+      "callsign": "LIFT-07",
+      "score": 2200,
+      "missionsFlown": 1,
+      "rescued": 1,
+      "stars": 2,
+      "flight": "2:53"
+    },
+    {
+      "callsign": "LIFT-07",
+      "score": 2200,
+      "missionsFlown": 1,
+      "rescued": 1,
+      "stars": 2,
+      "flight": "2:51"
+    },
+    {
+      "callsign": "LIFT-07",
+      "score": 2200,
+      "missionsFlown": 1,
+      "rescued": 1,
+      "stars": 2,
+      "flight": "2:53"
+    },
+    {
+      "callsign": "LIFT-07",
+      "score": 2200,
+      "missionsFlown": 1,
+      "rescued": 1,
+      "stars": 2,
+      "flight": "2:53"
+    }
+  ],
+  "checks": {
+    "boot: game object + first frames rendered": {
+      "pass": true,
+      "detail": "frames=17"
+    },
+    "boot: title screen visible": {
+      "pass": true,
+      "detail": ""
+    },
+    "boot: 4 missions listed on the flight plan": {
+      "pass": true,
+      "detail": ""
+    },
+    "boot: 3 pilot slots on title": {
+      "pass": true,
+      "detail": ""
+    },
+    "boot: turnaround refit row present": {
+      "pass": true,
+      "detail": ""
+    },
+    "boot: base card names Summit Base helipad": {
+      "pass": true,
+      "detail": ""
+    },
+    "play: hover lock earned for real (phase on-hook)": {
+      "pass": true,
+      "detail": "phase=on-hook score=800"
+    },
+    "play: survivor on the hook scores +500 (score >= 800)": {
+      "pass": true,
+      "detail": "score=800"
+    },
+    "play: radio log reports the hook (SUMMIT CONTROL)": {
+      "pass": true,
+      "detail": ""
+    },
+    "play: survivor aboard for real (+200)": {
+      "pass": true,
+      "detail": "phase=aboard score=1000"
+    },
+    "play: rescue 1 delivered for real (delivered = 1)": {
+      "pass": true,
+      "detail": "delivered=1 score=1400"
+    },
+    "play: full rescue scores 1400 (300 lock + 500 hook + 200 aboard + 400 soft)": {
+      "pass": true,
+      "detail": "score=1400"
+    },
+    "play: debrief measures recorded (steadiness, winch time, soft sink)": {
+      "pass": true,
+      "detail": "{\"steadiness\":54,\"winchTime\":10.199300000000115,\"sink\":0.700821368541209,\"fuelLeft\":79,\"verdict\":\"soft\",\"points\":400,\"stars\":2,\"delivered\":1,\"of\":3}"
+    },
+    "play: fuel burned (not 100%)": {
+      "pass": true,
+      "detail": "fuel=78.84599321999721"
+    },
+    "play: storm clock ticking (under 12:00)": {
+      "pass": true,
+      "detail": "stormLeft=611.6908999999738"
+    },
+    "play: second survivor on the hook (score 2200)": {
+      "pass": true,
+      "detail": "score=2200 phase=on-hook"
+    },
+    "legibility: night shot": {
+      "pass": true,
+      "detail": "[]"
+    },
+    "play: cockpit panel lit (7 gauges drawn)": {
+      "pass": true,
+      "detail": ""
+    },
+    "play: winch-cam inset drawn (ring + heli dot)": {
+      "pass": true,
+      "detail": ""
+    },
+    "cover: rescue ring ahead in frame": {
+      "pass": true,
+      "detail": "{\"x\":571,\"y\":793,\"visible\":true}"
+    },
+    "cover: lit hospital pad ahead in frame": {
+      "pass": true,
+      "detail": "{\"x\":722,\"y\":448,\"visible\":true}"
+    },
+    "cover: earned score on the HUD (2200, matches the record)": {
+      "pass": true,
+      "detail": "score=2200"
+    },
+    "cover: rescued progress on the HUD (1/7)": {
+      "pass": true,
+      "detail": "RESCUED 1 / 7 · STARS 2 / 21"
+    },
+    "cover: storm timer on the HUD (counts down from 12:00)": {
+      "pass": true,
+      "detail": "09:06"
+    },
+    "cover: HUD shows altitude + speed + heading + rotor RPM": {
+      "pass": true,
+      "detail": ""
+    },
+    "cover: objective shows live distance to the next target": {
+      "pass": true,
+      "detail": "Ring 2 survivors left — 27 m ↑ AHEAD — hover over the gold ring"
+    },
+    "cover: radio log has the named base voice (SUMMIT CONTROL)": {
+      "pass": true,
+      "detail": ""
+    },
+    "cover: rescue checklist visible with steps ticked": {
+      "pass": true,
+      "detail": ""
+    },
+    "cover: winch state on the HUD (ON-HOOK)": {
+      "pass": true,
+      "detail": ""
+    },
+    "legibility: cover (no overflow / overlap / out-of-frame)": {
+      "pass": true,
+      "detail": "[]"
+    },
+    "legibility: proof screen": {
+      "pass": true,
+      "detail": "[]"
+    },
+    "proof: 6 honest debrief cells shown": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: total score cell shows the session score": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: hover steadiness + winch time + landing softness shown": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: session medal + rank + BEST score shown (real values)": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: rank letter computed from the session": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: debrief headline names the delivered survivor": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: incident line from the record (clean session)": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: all 4 missions show a score/medal state": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: pilot-log progress line in the debrief note": {
+      "pass": true,
+      "detail": ""
+    },
+    "proof: persistent top + bottom bars visible": {
+      "pass": true,
+      "detail": ""
+    },
+    "legibility: title screen": {
+      "pass": true,
+      "detail": "[]"
+    },
+    "title: 4 missions with different goals listed": {
+      "pass": true,
+      "detail": ""
+    },
+    "title: mission 1 shows its earned score": {
+      "pass": true,
+      "detail": ""
+    },
+    "title: turnaround refit row visible (live points)": {
+      "pass": true,
+      "detail": ""
+    },
+    "title: persistent top + bottom bars visible": {
+      "pass": true,
+      "detail": ""
+    },
+    "title: top bar shows the session score": {
+      "pass": true,
+      "detail": ""
+    },
+    "consistency: proof vs title record identical": {
+      "pass": true,
+      "detail": "[{\"callsign\":\"LIFT-07\",\"score\":2200,\"missionsFlown\":1,\"rescued\":1,\"stars\":2,\"flight\":\"2:53\"},{\"callsign\":\"LIFT-07\",\"score\":2200,\"missionsFlown\":1,\"rescued\":1,\"stars\":2,\"flight\":\"2:53\"}]"
+    },
+    "zero console errors": {
+      "pass": true,
+      "detail": ""
+    },
+    "zero failed network requests": {
+      "pass": true,
+      "detail": ""
+    },
+    "file: 01-cover.jpg exists (150 KB, ≤256 KiB)": {
+      "pass": true,
+      "detail": "153894 bytes"
+    },
+    "file: 02-night.jpg exists (169 KB, ≤256 KiB)": {
+      "pass": true,
+      "detail": "172716 bytes"
+    },
+    "file: 03-proof.jpg exists (138 KB, ≤256 KiB)": {
+      "pass": true,
+      "detail": "141750 bytes"
+    },
+    "file: 04-title.jpg exists (167 KB, ≤256 KiB)": {
+      "pass": true,
+      "detail": "171085 bytes"
+    },
+    "contact sheet built": {
+      "pass": true,
+      "detail": ""
+    }
+  }
+}
