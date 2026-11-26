@@ -97,15 +97,33 @@ nothing is inflated.
 
 Captured with `capture.mjs` (headless Chromium over CDP, serves `game/`
 from localhost, port 8333): rescue 1 is flown FOR REAL — hover lock, clip,
-reel, soft pad landing, score 1400, steadiness 70%, winch 9.8 s, sink
-0.69 m/s, fuel 79% — then a second survivor is clipped for the cover
-state. `01-cover.jpg` chase view (heli over the lit ring, cable down,
+reel, soft pad landing, score 1400, steadiness 54%, winch 10.2 s, sink
+0.70 m/s, fuel 79%, 2 stars — then a second survivor is clipped for the
+cover state. `01-cover.jpg` chase view (heli over the lit ring, cable down,
 survivor on the hook, score 2200, rescued 1/7, storm 09:07, checklist,
 radio log, winch-cam), `02-night.jpg` cockpit in the storm (lit panel,
 winch-cam, next beacon + distance), `03-proof.jpg` debrief (6 honest
 cells, GOLD medal, rank A, BEST 2200), `04-title.jpg` flight-plan title
 screen — one consistent pilot record across all four. `checks.json`:
 55 checks, 0 failures.
+
+## The verified rescue flight (CDP run, `checks.json`)
+
+Callsign **LIFT-07**, flight time 2:53, Ridge Rescue. The debrief record
+from the run, verbatim: steadiness 54% (share of the lowering held within
+3 m of the ring centre), winch time 10.2 s, sink 0.70 m/s (verdict soft,
+≤3.0 m/s), fuel left 79%, 2 stars of 3, delivered 1 of 3. Score breakdown,
+earned step by step: +300 hover lock (phase on-hook, score 800) → +500
+clip-on → +200 aboard (score 1000) → +400 soft landing (score 1400,
+GOLD ≥1400). The second survivor was then clipped for the cover state:
+score 2200 (1400 delivered + 800 second hook), rescued 1/7, stars 2/21,
+storm 09:07, fuel 65%, winch state ON-HOOK, objective live — "Ring 2
+survivors left — 27 m ↑ AHEAD — hover over the gold ring". The proof
+screen shows the same record: 6 debrief cells, GOLD medal, rank A,
+BEST 2200, all 4 missions with a score/medal state, incident line "clean
+session", pilot-log progress line — and the title screen reads the
+identical record (consistency check passes). Zero console errors, zero
+failed network requests across the whole run.
 
 ## Field notes (26 Nov, ~19:30 WIB)
 
