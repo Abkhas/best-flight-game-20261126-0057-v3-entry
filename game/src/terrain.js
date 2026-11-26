@@ -87,6 +87,53 @@ function glowSprite(color = '#ffd27f') {
   return t;
 }
 
+// A floating place-name label: gold stencil text on a dark pill, always
+// facing the camera. Names are what turn terrain into a PLACE (C1).
+function makeLabel(text, scale = 1) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 96;
+  const g = c.getContext('2d');
+  g.fillStyle = 'rgba(3,7,15,0.72)';
+  g.beginPath(); g.roundRect(6, 10, 500, 76, 14); g.fill();
+  g.strokeStyle = 'rgba(255,210,127,0.85)'; g.lineWidth = 3; g.stroke();
+  g.fillStyle = '#ffd27f'; g.font = 'bold 44px "Courier New", monospace';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, 256, 50);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false }));
+  sp.scale.set(110 * scale, 20.6 * scale, 1);
+  return sp;
+}
+
+// A flat ribbon hugging the terrain (river / road): a triangle strip whose
+// vertices sit just above groundHeight, so the line reads at any distance.
+function ribbon(path, width, yOff, color, opacity = 0.95) {
+  const pts = [];
+  for (let i = 0; i < path.length; i++) {
+    const [x, z] = path[i];
+    pts.push([x, groundHeight(x, z) + yOff, z]);
+  }
+  const posArr = new Float32Array(pts.length * 2 * 3);
+  const idx = [];
+  for (let i = 0; i < pts.length; i++) {
+    const [x, y, z] = pts[i];
+    const [nx, , nz] = pts[Math.min(i + 1, pts.length - 1)];
+    const [px, , pz] = pts[Math.max(i - 1, 0)];
+    let dx = nx - px, dz = nz - pz;
+    const len = Math.hypot(dx, dz) || 1; dx /= len; dz /= len;
+    const ox = -dz * width / 2, oz = dx * width / 2;
+    posArr.set([x + ox, y, z + oz], i * 6);
+    posArr.set([x - ox, y, z - oz], i * 6 + 3);
+    if (i > 0) { const a = (i - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    color, transparent: opacity < 1, opacity, side: THREE.DoubleSide,
+  }));
+}
+
 export function buildWorld(scene) {
   const world = {
     tick: () => {}, rings: [], pads: [], beam: null, storm: null,
@@ -131,11 +178,14 @@ export function buildWorld(scene) {
     const h = groundHeight(x, z);
     pos.setY(i, h);
     const n = noise(x * 0.02, z * 0.02);
+    const n2 = noise(x * 0.008 + 7, z * 0.008 + 3); // big drift patches
     const c = new THREE.Color();
-    if (h > 300) c.copy(snow).lerp(snowShade, n * 0.5);
+    if (h > 300) c.copy(snow).lerp(snowShade, n * 0.5 + n2 * 0.25);
     else if (h > 150) c.copy(snow).lerp(rock, 0.10 + n * 0.15);
     else if (h > 60) c.copy(snow).lerp(pine, 0.18 + n * 0.25);
     else c.copy(snow).lerp(rockDark, n * 0.3);
+    if (n2 > 0.68) c.lerp(new THREE.Color(0xbfd4ea), 0.45); // blue snow drifts
+    else if (n2 < 0.25) c.lerp(new THREE.Color(0xf4ead8), 0.25); // warm dawn snow
     colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
   }
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -152,7 +202,17 @@ export function buildWorld(scene) {
   const treeGeo = new THREE.ConeGeometry(4, 16, 6);
   const trunkGeo = new THREE.CylinderGeometry(0.7, 0.9, 4, 5);
   let trees = 0;
-  for (let i = 0; i < 130 && trees < 70; i++) {
+  const plantTree = (x, z, s) => {
+    const h = groundHeight(x, z);
+    if (h < 30 || h > 170) return;
+    const t = new THREE.Group();
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 2; t.add(trunk);
+    const c1 = new THREE.Mesh(treeGeo, pineMat); c1.position.y = 10; t.add(c1);
+    const c2 = new THREE.Mesh(new THREE.ConeGeometry(3, 10, 6), snowPineMat); c2.position.y = 16; t.add(c2);
+    t.scale.setScalar(s); t.position.set(x, h, z);
+    scene.add(t); trees++;
+  };
+  for (let i = 0; i < 420 && trees < 190; i++) {
     const x = (hash(i, 7) - 0.5) * 3000, z = (hash(i, 13) - 0.5) * 3000;
     const h = groundHeight(x, z);
     if (h < 30 || h > 170) continue;
@@ -160,13 +220,13 @@ export function buildWorld(scene) {
     if (Math.abs(x) < 90 && z > -720 && z < 220) continue;
     if (Math.hypot(x - PAD.x, z - PAD.z) < 70) continue;
     if (Math.hypot(x - VALLEY_PAD.x, z - VALLEY_PAD.z) < 60) continue;
-    const t = new THREE.Group();
-    const trunk = new THREE.Mesh(trunkGeo, trunkMat); trunk.position.y = 2; t.add(trunk);
-    const c1 = new THREE.Mesh(treeGeo, pineMat); c1.position.y = 10; t.add(c1);
-    const c2 = new THREE.Mesh(new THREE.ConeGeometry(3, 10, 6), snowPineMat); c2.position.y = 16; t.add(c2);
-    const s = 0.8 + hash(i, 29) * 0.9;
-    t.scale.setScalar(s); t.position.set(x, h, z);
-    scene.add(t); trees++;
+    plantTree(x, z, 0.8 + hash(i, 29) * 0.9);
+  }
+  // dense forest patch on the lower east slope — a forest, not three pines
+  for (let i = 0; i < 60 && trees < 240; i++) {
+    const a = hash(i, 41) * Math.PI * 2, r = Math.sqrt(hash(i, 43)) * 130;
+    const x = 300 + Math.cos(a) * r * 1.2, z = 330 + Math.sin(a) * r * 0.8;
+    plantTree(x, z, 0.9 + hash(i, 47) * 0.8);
   }
 
   // --- storm clouds: big dark translucent billboards drifting overhead ---
@@ -180,6 +240,68 @@ export function buildWorld(scene) {
     cl.userData.vx = 4 + hash(i, 23) * 6;
     scene.add(cl); world.clouds.push(cl);
   }
+
+  // --- the river + the road: two lines that make the valley a PLACE ---
+  // The river winds down the valley floor east of the flight corridor; the
+  // road runs west of it. Both are wide, bright ribbons — they must read at
+  // contact-sheet scale, not as sub-pixel noise.
+  const riverPath = [];
+  for (let z = -1000; z <= 800; z += 50) riverPath.push([95 + 45 * Math.sin(z * 0.0032) + 15 * Math.sin(z * 0.011), z]);
+  scene.add(ribbon(riverPath, 10, 0.7, 0x2568a8));
+  const roadPath = [];
+  for (let z = -1000; z <= 800; z += 50) roadPath.push([-155 + 25 * Math.sin(z * 0.002 + 1.3), z]);
+  scene.add(ribbon(roadPath, 8, 0.5, 0x2e2b28));
+  // road centre dashes: pale quads every 26 m along the road
+  const dashMat = new THREE.MeshBasicMaterial({ color: 0xd8d2c4 });
+  for (let z = -980; z <= 780; z += 26) {
+    const x = -155 + 25 * Math.sin(z * 0.002 + 1.3);
+    const d = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 5), dashMat);
+    d.rotation.x = -Math.PI / 2; d.rotation.z = 0.2;
+    d.position.set(x, groundHeight(x, z) + 0.9, z);
+    scene.add(d);
+  }
+
+  // --- PINEHOLLOW village: a cluster of houses with lit windows, east of
+  // the valley pad — the named town on the cover ---
+  const houseCols = [0x6a5a48, 0x5a6a7a, 0x7a6a5a, 0x4a5a6a];
+  const winMat2 = new THREE.MeshBasicMaterial({ color: 0xffca6a });
+  for (let i = 0; i < 14; i++) {
+    const x = 580 + (hash(i, 53) - 0.5) * 140, z = 280 + (hash(i, 59) - 0.5) * 120;
+    const h = groundHeight(x, z);
+    const g2 = new THREE.Group();
+    const walls = new THREE.Mesh(new THREE.BoxGeometry(9, 5, 7),
+      new THREE.MeshPhongMaterial({ color: houseCols[i % 4] }));
+    walls.position.y = 2.5; g2.add(walls);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(6.8, 4, 4),
+      new THREE.MeshPhongMaterial({ color: 0x3a2e26 }));
+    roof.position.y = 7; roof.rotation.y = Math.PI / 4; g2.add(roof);
+    for (const wx of [-2.2, 2.2]) {
+      const w = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.4), winMat2);
+      w.position.set(wx, 2.8, -3.55); w.rotation.y = Math.PI; g2.add(w);
+    }
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: glowSprite('#ffca6a'), transparent: true, opacity: 0.5, depthWrite: false,
+    }));
+    glow.scale.set(16, 16, 1); glow.position.y = 4; g2.add(glow);
+    g2.position.set(x, h, z);
+    g2.rotation.y = hash(i, 61) * Math.PI;
+    scene.add(g2);
+  }
+  const pineLabel = makeLabel('PINEHOLLOW', 1.1);
+  pineLabel.position.set(580, groundHeight(580, 280) + 52, 280);
+  scene.add(pineLabel);
+
+  // --- the storm front: a dark wall of cloud in the north, with its name ---
+  const frontMat = new THREE.MeshBasicMaterial({ color: 0x131b2b, transparent: true, opacity: 0.95, fog: false });
+  for (let i = 0; i < 9; i++) {
+    const cl = new THREE.Mesh(new THREE.SphereGeometry(150 + hash(i, 67) * 110, 10, 8), frontMat);
+    cl.scale.y = 0.5;
+    cl.position.set(-1200 + i * 300, 360 + hash(i, 71) * 160, -1150 - hash(i, 73) * 120);
+    scene.add(cl);
+  }
+  const frontLabel = makeLabel('STORM FRONT', 1.3);
+  frontLabel.position.set(0, 580, -1120);
+  scene.add(frontLabel);
 
   // --- rescue rings: dashed gold torus + light beam + pulsing glow ---
   function buildRing(site, label) {
@@ -281,11 +403,18 @@ export function buildWorld(scene) {
   }
   world.pads = [buildPad(PAD, 'SUMMIT BASE · HELIPAD 07', true), buildPad(VALLEY_PAD, 'VALLEY PAD', false)];
   const padBeacon = new THREE.Mesh(
-    new THREE.CylinderGeometry(4, 8, 300, 10, 1, true),
-    new THREE.MeshBasicMaterial({ color: 0xcfe4ff, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide }),
+    new THREE.CylinderGeometry(6, 10, 300, 10, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0xcfe4ff, transparent: true, opacity: 0.30, depthWrite: false, side: THREE.DoubleSide }),
   );
   padBeacon.position.set(PAD.x, PAD.y + 150, PAD.z);
   scene.add(padBeacon);
+  // place-name labels over the two pads
+  const baseLabel = makeLabel('SUMMIT BASE', 1.1);
+  baseLabel.position.set(PAD.x, PAD.y + 58, PAD.z);
+  scene.add(baseLabel);
+  const valleyLabel = makeLabel('VALLEY PAD', 0.9);
+  valleyLabel.position.set(VALLEY_PAD.x, VALLEY_PAD.y + 42, VALLEY_PAD.z);
+  scene.add(valleyLabel);
 
   // --- the next-target marker: a slim gold beam over the target ---
   // (the gold diamond was removed: at 2.5 m it read as a giant kite on the

@@ -47,6 +47,9 @@ export function freshRecord() {
     flightMinutes: 0,
     flightSeconds: 0,
     bestLandingVs: null, // gentlest pad touchdown sink (m/s), null until first
+    recorder: [],        // flight-recorder time series [{t, alt, spd}] — sampled in flight
+    maxGust: 0,          // strongest gust met this session, knots — a real incident
+    stormDecision: null, // the pilot's STORM CLOSING IN choice: 'ABORT' | 'FINISH'
     log: [],
   };
 }
@@ -109,12 +112,13 @@ export function proofNote(lastRescue) {
 
 // Medals are computed from REAL recorded performance only. A mission's medal
 // keys on its rescues delivered + stars earned in it; nothing is assigned
-// for flying nothing.
+// for flying nothing. Thresholds are on the x10 score scale: one full rescue
+// (lock 3000 + hook 5000 + aboard 2000 + soft 4000) is 14000 = GOLD.
 const MEDAL_RANK = { '—': 0, BRONZE: 1, SILVER: 2, GOLD: 3 };
 export function missionMedals() {
   return [1, 2, 3, 4].map((id) => {
     const sc = record.missionScores[id];
-    const medal = sc >= 1400 ? 'GOLD' : sc >= 800 ? 'SILVER' : sc > 0 ? 'BRONZE' : '—';
+    const medal = sc >= 14000 ? 'GOLD' : sc >= 8000 ? 'SILVER' : sc > 0 ? 'BRONZE' : '—';
     return { id, medal, score: sc };
   });
 }
@@ -134,10 +138,16 @@ export function sessionRank() {
 }
 
 export function incidentLine() {
-  const trap = record.bestLandingVs === null ? 'no pad landing yet'
-    : `gentlest landing ${record.bestLandingVs.toFixed(1)} m/s down`;
-  if (record.crashes === 0 && record.hardLandings === 0)
-    return `INCIDENT LOG — Clean session: no hard landings, no crashes · ${trap}.`;
-  return `INCIDENT LOG — ${record.hardLandings} hard landing${record.hardLandings === 1 ? '' : 's'} · `
-    + `${record.crashes} crash${record.crashes === 1 ? '' : 'es'} · ${trap}.`;
+  // The incident log: every item is a REAL measured fact of this session —
+  // cable wear (+8% per delivery), the strongest gust met, hard landings,
+  // crashes, and the gentlest pad landing. No invented incidents.
+  const items = [];
+  if (record.crashes === 0 && record.hardLandings === 0) items.push('CLEAN SESSION — NO HARD LANDINGS, NO CRASHES');
+  else items.push(`${record.hardLandings} HARD LANDING${record.hardLandings === 1 ? '' : 'S'} · ${record.crashes} CRASH${record.crashes === 1 ? '' : 'ES'}`);
+  if (record.cableWear > 0) items.push(`CABLE WEAR +${record.cableWear}% AFTER ${record.rescuesDelivered} DELIVER${record.rescuesDelivered === 1 ? 'Y' : 'IES'}`);
+  if (record.maxGust > 0) items.push(`STRONGEST GUST ${Math.round(record.maxGust)} KT ON THE RIDGE`);
+  const trap = record.bestLandingVs === null ? 'NO PAD LANDING YET'
+    : `GENTLEST LANDING ${record.bestLandingVs.toFixed(1)} M/S DOWN`;
+  items.push(trap);
+  return 'INCIDENT LOG — ' + items.join(' · ');
 }

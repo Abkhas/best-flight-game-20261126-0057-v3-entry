@@ -19,13 +19,15 @@ export function updateCamera(cam, s, mode, t, snap = false, target = null) {
 
   if (mode === 'cockpit') {
     // Pilot's eye: at the glass nose, high over the skids — the nose drops
-    // away below, the ring and the pad ahead stay in view.
+    // away below, the ring and the pad ahead stay in view. The eye sits
+    // forward and the look is pitched down, so the rotor disc stays above
+    // the top of the frame instead of crossing it.
     const eye = new THREE.Vector3(s.x, s.y, s.z)
-      .addScaledVector(fwd, 2.6)
-      .addScaledVector(up, 1.1);
+      .addScaledVector(fwd, 2.8)
+      .addScaledVector(up, 1.25);
     const look = new THREE.Vector3(s.x, s.y, s.z)
       .addScaledVector(fwd, 60)
-      .addScaledVector(up, Math.sin(s.pitch) * 30 - 8);
+      .addScaledVector(up, Math.sin(s.pitch) * 30 - 13);
     cam.position.copy(eye);
     cam.up.set(Math.sin(s.bank), Math.cos(s.bank), 0);
     cam.lookAt(look);

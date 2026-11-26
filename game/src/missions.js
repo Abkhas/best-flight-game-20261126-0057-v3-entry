@@ -14,6 +14,8 @@ export const MISSIONS = [
   {
     id: 1, name: 'RIDGE RESCUE', kicker: 'MISSION 1 OF 4 · STORM CLOSING IN',
     brief: 'Winch 3 climbers off Storm Ridge before the storm closes in.',
+    radio: 'WINCH 3 CLIMBERS OFF THE RIDGE',
+    names: ['MARC, 38', 'ANNA, 41', 'TOM, 29'],
     goal: '3 CLIMBERS · HOVER + WINCH + DELIVER',
     ring: RING_A, pad: PAD, survivors: 3, stormMinutes: 12, gust: 2.5, weather: 'storm',
     spawn: { x: 0, y: PAD.y + 55, z: -560, heading: Math.PI, collective: 0.55 },
@@ -21,6 +23,8 @@ export const MISSIONS = [
   {
     id: 2, name: 'NIGHT MEDEVAC', kicker: 'MISSION 2 OF 4 · AFTER DARK',
     brief: 'A patient waits on a ledge in the dark — lift them to the lit pad.',
+    radio: 'LIFT THE PATIENT OFF THE LEDGE',
+    names: ['ELENA, 56'],
     goal: '1 PATIENT · LEDGE PICKUP · NIGHT LANDING',
     ring: RING_B, pad: PAD, survivors: 1, stormMinutes: 8, gust: 2.5, weather: 'night',
     spawn: { x: -260, y: RING_B.y + 60, z: -360, heading: -0.79, collective: 0.55 },
@@ -28,6 +32,8 @@ export const MISSIONS = [
   {
     id: 3, name: 'BLIZZARD RUN', kicker: 'MISSION 3 OF 4 · WHITEOUT',
     brief: 'Supply drop and one rescue in a whiteout — fly by the beacon alone.',
+    radio: 'ONE RESCUE IN THE WHITEOUT',
+    names: ['JONAS, 33'],
     goal: '1 SURVIVOR · WHITEOUT · BEACON-ONLY NAV',
     ring: RING_C, pad: PAD, survivors: 1, stormMinutes: 10, gust: 6.0, weather: 'whiteout',
     spawn: { x: 240, y: RING_C.y + 60, z: -100, heading: 0.79, collective: 0.55 },
@@ -35,6 +41,8 @@ export const MISSIONS = [
   {
     id: 4, name: 'VALLEY FERRY', kicker: 'MISSION 4 OF 4 · STRETCHER TRANSFER',
     brief: 'Ferry 2 stretcher patients between the pads — gentle wins.',
+    radio: 'FERRY 2 PATIENTS, PAD TO PAD',
+    names: ['SARA, 62', 'PETR, 47'],
     goal: '2 PATIENTS · PAD TO PAD · GENTLE LANDINGS',
     ring: RING_D, pad: VALLEY_PAD, survivors: 2, stormMinutes: 14, gust: 2.0, weather: 'dawn',
     spawn: { x: 0, y: PAD.y + 45, z: -560, heading: 0, collective: 0.55 },
@@ -91,7 +99,7 @@ export function updateMission(m, s, winch, world, hooks, dt) {
     m.stormLeft -= dt;
     if (m.stormLeft <= 0) {
       m.stormLeft = 0; m.stormFailed = true;
-      radio('SUMMIT CONTROL', 'STORM CLOSED IN — MISSION FAILED, RTB');
+      radio('SUMMIT CONTROL', 'STORM IN — MISSION FAILED, RTB');
       logEvent(`Storm closed in on mission ${m.id} — failed`);
       hooks.onStormFail?.(m);
       return 'STORM CLOSED IN — MISSION FAILED';
@@ -105,8 +113,8 @@ export function updateMission(m, s, winch, world, hooks, dt) {
     const dmg = applyLanding(s, verdict);
     if (verdict === 'soft' || verdict === 'hard') {
       const sink = -s.vs;
-      const pts = verdict === 'soft' ? 400 : 200;
-      addScore(pts, `soft landing on the pad (${sink.toFixed(1)} m/s)`, m.id);
+      const pts = verdict === 'soft' ? 4000 : 2000;
+      addScore(pts, `${verdict} landing on the pad (${sink.toFixed(1)} m/s)`, m.id);
       m.delivered += 1;
       record.rescuesDelivered += 1;
       // the debrief for THIS rescue, from real measured values
@@ -117,11 +125,16 @@ export function updateMission(m, s, winch, world, hooks, dt) {
       m.lastRescue = {
         steadiness: stead, winchTime: wtime, sink, fuelLeft: Math.round(s.fuel),
         verdict, points: pts, stars, delivered: m.delivered, of: m.def.survivors,
+        name: m.def.names[m.delivered - 1] || `SURVIVOR ${m.delivered}`,
+        // touchdown plan, all measured at the moment of delivery
+        touchdownSpeed: Math.round(s.speed * 1.944), // kt
+        offCentre: Math.hypot(s.x - m.def.pad.x, s.z - m.def.pad.z), // m from pad centre
+        hoverErr: winch.lockErr ?? null, // m — hover error when the lock was earned
       };
       if (record.bestLandingVs === null || sink < record.bestLandingVs) record.bestLandingVs = sink;
       record.cableWear = Math.min(100, record.cableWear + 8);
       s.cableWear = record.cableWear;
-      radio('SUMMIT CONTROL', `${verdict === 'soft' ? 'SOFT' : 'HARD'} LANDING +${pts} — SURVIVOR ${m.delivered} OF ${m.def.survivors} DELIVERED`);
+      radio('SUMMIT CONTROL', `${verdict === 'soft' ? 'SOFT' : 'HARD'} +${pts} — ${m.delivered} OF ${m.def.survivors} HOME`);
       logEvent(`Survivor ${m.delivered}/${m.def.survivors} delivered — ${verdict} landing ${sink.toFixed(1)} m/s, ${stars}★`);
       m.aboard = false;
       s.onGround = false; s.landed = false;
@@ -131,7 +144,7 @@ export function updateMission(m, s, winch, world, hooks, dt) {
         m.done = true; m.result = 'complete';
         record.missionsComplete += 1;
         record.refitPoints += 1;
-        radio('SUMMIT CONTROL', `${m.def.name} COMPLETE — ALL ${m.def.survivors} DELIVERED · REFIT EARNED`);
+        radio('SUMMIT CONTROL', `${m.def.name} DONE — ALL ${m.def.survivors} HOME`);
         logEvent(`Mission ${m.id} complete — all ${m.def.survivors} delivered`);
         hooks.onComplete?.(m.def);
         return `${m.def.name} COMPLETE — ALL ${m.def.survivors} DELIVERED +${pts}`;

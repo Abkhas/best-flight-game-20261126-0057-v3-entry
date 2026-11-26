@@ -29,7 +29,8 @@
   #hud-rpm { top: 12px; left: 402px; min-width: 104px; }
   #hud-storm { top: 12px; right: 12px; min-width: 150px; text-align: right; }
   #hud-storm .val { color: #ffe9a8; font-size: 30px; }
-  #hud-score { top: 12px; right: 190px; min-width: 150px; text-align: right; }
+  #hud-storm .sub { font-size: 11px; color: #9fc4e8; }
+  #hud-score { top: 12px; right: 240px; min-width: 150px; text-align: right; }
   #hud-score .val { color: #ffd27f; }
   #hud-score .sub { font-size: 11px; color: #9fc4e8; }
   #hud-res { top: 104px; right: 12px; width: 320px; text-align: left; }
@@ -39,8 +40,8 @@
   #hud-res .bar.cbl > div { background: #9fd8ff; }
   #hud-res .lab { font-size: 10px; letter-spacing: 2px; color: #7fb8e8; }
   #hud-res .lab span { color: #eaf6ff; font-size: 12px; letter-spacing: 0; }
-  #radio-log { position: absolute; left: 12px; top: 104px; width: 340px; font-family: var(--mono);
-    font-size: 12.5px; line-height: 1.55; color: #cfe8ff; background: rgba(4, 12, 24, 0.55);
+  #radio-log { position: absolute; left: 12px; top: 104px; width: 400px; font-family: var(--mono);
+    font-size: 12px; line-height: 1.55; color: #cfe8ff; background: rgba(4, 12, 24, 0.55);
     border: 1px solid rgba(110, 200, 255, 0.28); border-radius: 8px; padding: 8px 10px; }
   #radio-log .rhead, #checklist .rhead { font-size: 10px; letter-spacing: 2px; color: #ffd27f; margin-bottom: 3px; font-family: var(--mono); }
   #radio-log .rline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -61,6 +62,19 @@
   #hud-decision { position: absolute; top: 280px; left: 50%; transform: translateX(-50%); font-size: 17px; font-weight: 700;
     color: #06121f; background: #ffd27f; border-radius: 8px; padding: 8px 16px; text-align: center; display: none;
     box-shadow: 0 4px 24px rgba(240,168,50,0.5); }
+  /* coaching banner: the game's voice telling the pilot what to do — a big
+     gold strip under the decision banner, always visible in flight. */
+  #hud-coach { position: absolute; top: 326px; left: 50%; transform: translateX(-50%); font-size: 15px; font-weight: 700;
+    letter-spacing: 1px; color: #06121f; background: linear-gradient(180deg, #ffe9a8, #f0a832);
+    border-radius: 8px; padding: 7px 16px; text-align: center; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(240,168,50,0.4); }
+  /* landing check: live numbers against real targets, bottom-left. */
+  #landing-check { position: absolute; left: 12px; bottom: 210px; width: 300px; font-family: var(--mono);
+    font-size: 12.5px; line-height: 1.6; color: #cfe8ff; background: rgba(4, 12, 24, 0.62);
+    border: 1px solid rgba(110, 200, 255, 0.3); border-radius: 8px; padding: 8px 10px; }
+  #landing-check .rhead { font-size: 10px; letter-spacing: 2px; color: #ffd27f; margin-bottom: 3px; }
+  #landing-check .lrow b { color: #fff; font-size: 14px; }
+  #landing-check .lrow span { color: #7fb8e8; font-size: 11px; }
   #hud-compass { position: absolute; top: 176px; left: 50%; transform: translateX(-50%); }
   #hud-compass canvas { display: block; }
   #hud-wind { position: absolute; bottom: 170px; right: 14px; font-family: var(--mono); font-size: 13px; color: #9fd8ff;
@@ -133,6 +147,17 @@
   .pcell .sub { font-size: 12px; color: #9fc4e8; }
   #proof-screen .note { font-size: 13px; color: #8fb6d8; max-width: 660px; line-height: 1.6; margin-bottom: 16px; }
   #proof-incident { color: #e8b48a; margin-bottom: 6px; }
+  /* flight recorder + touchdown plan: the proof row under the headline. */
+  #proof-recorder { display: flex; gap: 12px; margin-bottom: 14px; align-items: stretch; }
+  #recorder-chart { background: #04070e; border: 1px solid rgba(120,200,255,0.35); border-radius: 10px; }
+  #touchdown-plan { width: 400px; background: rgba(8,16,32,0.9); border: 1px solid rgba(255,210,127,0.45);
+    border-radius: 10px; padding: 10px 12px; text-align: left; }
+  #touchdown-plan .rhead { font-size: 11px; letter-spacing: 2px; color: #ffd27f; margin-bottom: 6px; }
+  #touchdown-plan .trow { display: flex; gap: 10px; }
+  #touchdown-plan .trow > div { flex: 1; }
+  #touchdown-plan .lab { font-size: 10px; letter-spacing: 1px; color: #7fb8e8; }
+  #touchdown-plan .val { font-family: var(--mono); font-size: 19px; font-weight: 700; color: #fff; line-height: 1.2; }
+  #touchdown-plan .sub { font-size: 10px; color: #9fc4e8; }
   #pause-screen, #end-screen { background: rgba(2,4,10,0.82); }
   #pause-screen h1, #end-screen h1 { font-family: var(--disp); font-size: 44px; letter-spacing: 6px; margin: 0 0 10px; }
   #end-screen .res { font-size: 18px; color: #ffe9a8; max-width: 560px; line-height: 1.6; margin-bottom: 20px; }
@@ -145,6 +170,10 @@
   #title-screen h1 { font-family: var(--disp); font-size: 68px; margin: 0; letter-spacing: 12px; color: #fff;
     text-shadow: 0 0 24px rgba(255,122,42,0.55), 0 4px 0 #0a1424, 0 8px 30px #000; }
   #title-screen h2 { font-family: var(--mono); font-size: 16px; margin: 4px 0 14px; letter-spacing: 5px; color: #ffd27f; font-weight: 600; }
+  /* count banner: the campaign totals in the largest numerals on the title. */
+  #count-banner { font-family: var(--disp); font-size: 22px; letter-spacing: 4px; color: #eaf3ff; margin-bottom: 12px; }
+  #count-banner b { font-size: 40px; color: #ffd27f; }
+  #count-banner span { margin: 0 10px; }
   #title-screen .board { display: flex; gap: 16px; margin-bottom: 14px; }
   .plan-col { width: 660px; background: rgba(5,12,26,0.82); border: 1px solid rgba(255,210,127,0.45); border-radius: 10px;
     padding: 10px 14px; text-align: left; }
@@ -201,7 +230,7 @@
   <div class="hud-box" id="hud-hdg"><div class="lab">HEADING</div><div><span class="val" id="hud-hdg-v">000</span><span class="unit">&deg;</span></div></div>
   <div class="hud-box" id="hud-rpm"><div class="lab">ROTOR RPM</div><div><span class="val" id="hud-rpm-v">97%</span></div></div>
   <div class="hud-box" id="hud-score"><div class="lab">SCORE</div><div><span class="val" id="hud-score-v">0</span></div><div class="sub" id="hud-score-sub">RESCUED 0 / 7 · STARS 0 / 21</div></div>
-  <div class="hud-box" id="hud-storm"><div class="lab">STORM CLOSES IN</div><div><span class="val" id="hud-storm-v">12:00</span></div></div>
+  <div class="hud-box" id="hud-storm"><div class="lab">STORM CLOSES IN</div><div><span class="val" id="hud-storm-v">12:00</span></div><div class="sub" id="hud-storm-sub">STORM FRONT — — NM BEHIND</div></div>
   <div class="hud-box" id="hud-res">
     <div class="lab">FUEL <span id="hud-fuel-v">100%</span></div><div class="bar"><div id="hud-fuel-bar" style="width:100%"></div></div>
     <div class="lab">AIRFRAME <span id="hud-hull-v">100%</span></div><div class="bar dmg"><div id="hud-hull-bar" style="width:100%"></div></div>
@@ -213,9 +242,11 @@
   <div id="hud-msg"></div>
   <div id="hud-warn"></div>
   <div id="hud-decision">FUEL LOW — PRESS <b>1</b> RTB TO THE PAD · <b>2</b> PRESS ON</div>
+  <div id="hud-coach"></div>
+  <div id="landing-check"></div>
   <div id="radio-log"></div>
   <div id="checklist"></div>
-  <div id="winch-cam"><div class="rhead">WINCH CAM — DOWN</div><canvas id="winch-cam-c" width="186" height="120"></canvas></div>
+  <div id="winch-cam"><div class="rhead">CHART — SUMMIT VALLEY</div><canvas id="winch-cam-c" width="186" height="120"></canvas></div>
   <div id="hud-wind">WIND 0 KT · COLLECTIVE 50%</div>
   <div id="hud-hint">W/S COLLECTIVE &nbsp;·&nbsp; ARROWS FLY &nbsp;·&nbsp; A/D YAW &nbsp;·&nbsp; SPACE WINCH &nbsp;·&nbsp; C CAMERA</div>
   <div id="reticle"></div>
@@ -234,11 +265,13 @@
   <div class="plate"><canvas id="g-vs" width="132" height="132"></canvas></div>
   <div class="plate"><canvas id="g-hdg" width="190" height="132"></canvas></div>
   <div class="plate"><canvas id="g-fuel" width="190" height="132"></canvas></div>
+  <div class="plate"><canvas id="g-warn" width="132" height="132"></canvas></div>
 </div>
 
 <div class="screen on" id="title-screen">
   <h1>SUMMIT LIFT</h1>
   <h2>HELICOPTER WINCH RESCUE OVER THE HIGH PEAKS</h2>
+  <div id="count-banner"><span><b>4</b> MISSIONS</span>·<span><b>7</b> SURVIVORS</span>·<span><b>21</b> STARS</span></div>
   <div class="board">
     <div class="plan-col">
       <div class="rhead">FLIGHT PLAN — 4 MISSIONS · 7 SURVIVORS · 21 STARS · ONE STORM</div>
@@ -269,6 +302,7 @@
   <h2 id="proof-callsign">CALLSIGN LIFT-07 · SUMMIT BASE</h2>
   <div id="proof-medal"></div>
   <div id="proof-headline" style="font-size:15px; letter-spacing:2px; color:#eaf6ff; margin-bottom:14px; font-family:var(--mono)"></div>
+  <div id="proof-recorder"><canvas id="recorder-chart" width="420" height="120"></canvas><div id="touchdown-plan"></div></div>
   <div class="proof-grid" id="proof-grid"></div>
   <div id="proof-sorties"></div>
   <div class="note" id="proof-incident"></div>

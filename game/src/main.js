@@ -8,7 +8,7 @@ import { freshState, step, LIMITS } from './flight-model.js';
 import { MISSIONS, missionState, updateMission, nextTarget, nextTargetPos } from './missions.js';
 import { freshWinch, updateWinch, reelIn } from './winch.js';
 import { drawAll } from './instruments.js';
-import { updateHUD, setMessage, showHUD, renderPersistentBars, showDecision } from './hud.js';
+import { updateHUD, setMessage, showHUD, renderPersistentBars, showDecision, getDecisionKind } from './hud.js';
 import { makeCamera, updateCamera, CAM_MODES } from './camera.js';
 import { ensureAudio, updateAudio, chime, thud } from './audio.js';
 import { record, logEvent, addFlightTime, GAME } from './saves.js';
@@ -58,7 +58,7 @@ function beginMission(id, count = true) {
     record.missionsFlown += 1;
     logEvent(`Mission ${id} started — ${def.name}`);
     radio('SUMMIT CONTROL', `LIFT-07, CLEARED FOR ${def.name.toUpperCase()}`);
-    radio('SUMMIT CONTROL', def.brief.toUpperCase());
+    radio('SUMMIT CONTROL', def.radio.toUpperCase());
   }
   setMessage(def.name + ' — ' + def.brief, 5);
   hideScreens();
@@ -130,7 +130,7 @@ function applyRefit(i) {
   if (i === 0) { flight.fuel = Math.min(100, flight.fuel + 30); logEvent('Refit: fuel +30%'); }
   if (i === 1) { flight.damage = 0; logEvent('Refit: airframe repaired'); }
   if (i === 2) { flight.cableWear = 0; record.cableWear = 0; logEvent('Refit: new winch cable'); }
-  radio('SUMMIT CONTROL', 'REFIT DONE — SHE IS READY FOR THE NEXT ONE');
+  radio('SUMMIT CONTROL', 'REFIT DONE — SHE IS READY');
   return true;
 }
 
@@ -164,22 +164,44 @@ window.addEventListener('keydown', (e) => {
     else if (screen === 'paused') { screen = 'log'; showLog(); }
   }
   if (code === 'Digit1' || code === 'Digit2' || code === 'Digit3' || code === 'Digit4') {
-    if (screen === 'flying' && record.decision === null && flight.fuel <= 12) {
-      // the FUEL LOW decision: 1 = RTB to the pad, 2 = press on
-      if (code === 'Digit1') {
-        record.decision = 'RTB';
-        radio('LIFT-07', 'SUMMIT CONTROL, LIFT-07 RTB — LOW FUEL');
-        radio('SUMMIT CONTROL', 'ROGER, RTB — PAD IS LIT FOR YOU');
-        showDecision(false);
-        setMessage('DECISION — RTB TO THE PAD', 4);
-      } else if (code === 'Digit2') {
-        record.decision = 'PRESS ON';
-        radio('LIFT-07', 'SUMMIT CONTROL, LIFT-07 PRESSING ON');
-        radio('SUMMIT CONTROL', 'ROGER — WATCH THE FUEL, THE STORM IS COMING');
-        showDecision(false);
-        setMessage('DECISION — PRESSING ON', 4);
+    // A decision banner is up: 1/2 answer it (the other digits do nothing
+    // while a decision is pending — no accidental mission switch mid-choice).
+    if (screen === 'flying' && (code === 'Digit1' || code === 'Digit2')) {
+      const kind = getDecisionKind();
+      if (kind === 'storm' && record.stormDecision === null) {
+        if (code === 'Digit1') {
+          record.stormDecision = 'ABORT';
+          radio('LIFT-07', 'SUMMIT CONTROL, LIFT-07 ABORTING — RTB');
+          radio('SUMMIT CONTROL', 'ROGER, ABORT — PAD IS LIT FOR YOU');
+          showDecision(false);
+          setMessage('DECISION — ABORTING TO THE PAD', 4);
+        } else {
+          record.stormDecision = 'FINISH';
+          radio('LIFT-07', 'FINISHING THE RESCUE, CONTROL');
+          radio('SUMMIT CONTROL', 'ROGER — FINISH IT, FAST');
+          showDecision(false);
+          setMessage('DECISION — FINISHING THE RESCUE', 4);
+        }
+        return;
       }
-      return;
+      if (kind === 'fuel' && record.decision === null && flight.fuel <= 12) {
+        // the FUEL LOW decision: 1 = RTB to the pad, 2 = press on
+        if (code === 'Digit1') {
+          record.decision = 'RTB';
+          radio('LIFT-07', 'SUMMIT CONTROL, LIFT-07 RTB — LOW FUEL');
+          radio('SUMMIT CONTROL', 'ROGER, RTB — PAD IS LIT FOR YOU');
+          showDecision(false);
+          setMessage('DECISION — RTB TO THE PAD', 4);
+        } else if (code === 'Digit2') {
+          record.decision = 'PRESS ON';
+          radio('LIFT-07', 'SUMMIT CONTROL, LIFT-07 PRESSING ON');
+          radio('SUMMIT CONTROL', 'ROGER — WATCH THE FUEL, THE STORM IS COMING');
+          showDecision(false);
+          setMessage('DECISION — PRESSING ON', 4);
+        }
+        return;
+      }
+      if (kind) return; // a banner is up but this key is not its answer
     }
     if (screen !== 'title') beginMission(Number(code.slice(-1)));
   }
@@ -238,13 +260,21 @@ function loop(now) {
     }, dt, gust);
     flightSeconds += dt;
     addFlightTime(dt);
+    // flight recorder: altitude + speed sampled twice a second, so the proof
+    // screen can draw the real flight as a chart (SQUALL LINE's device).
+    record.maxGust = Math.max(record.maxGust, Math.abs(gust) * 1.944);
+    if (!record._recT || flightSeconds - record._recT >= 0.5) {
+      record._recT = flightSeconds;
+      record.recorder.push({ t: Math.round(flightSeconds), alt: Math.round(flight.y * 3.281), spd: Math.round(flight.speed * 1.944) });
+      if (record.recorder.length > 300) record.recorder.shift();
+    }
     world.markNext?.(nextTargetPos(mission, world), flight);
     const wEvent = updateWinch(winch, flight, world.rings.find((r) => r.label === mission.def.ringLabel || r.site === mission.def.ring) || world.rings[0], mission, dt, flightSeconds);
     if (wEvent) { setMessage(wEvent, 4); if (/HOOK|ABOARD|LOCK/.test(wEvent)) chime(988); }
     const mEvent = updateMission(mission, flight, winch, world, hooks, dt);
     if (mEvent) { setMessage(mEvent, 5); if (/COMPLETE|DELIVERED/.test(mEvent)) chime(1318); }
     updateHUD(flight, MISSIONS[missionId - 1], nextTarget(mission, world, flight), dt, mission, camMode, winch);
-    drawAll(flight, winch);
+    drawAll(flight, winch, mission);
     updateAudio(flight.collective, flight.speed);
     if (flight.fuel <= 0 && !msgShown) { msgShown = true; setMessage('FUEL EMPTY — AUTOROTATING DOWN, FIND THE PAD', 5); }
   }
@@ -301,9 +331,9 @@ window.__kit = {
   stagePadTakeoff() {
     beginMission(1, false);
     mission.delivered = 1;
-    mission.lastRescue = { steadiness: 85, winchTime: 9.8, sink: 0.7, fuelLeft: 79, verdict: 'soft', points: 400, stars: 2, delivered: 1, of: 3 };
-    record.rescuesDelivered = 1; record.stars = 2; record.missionScores[1] = 1400;
-    record.score = 1400; record.bestScore = 1400; record.refitPoints = 1; record.bestLandingVs = 0.7;
+    mission.lastRescue = { steadiness: 85, winchTime: 9.8, sink: 0.7, fuelLeft: 79, verdict: 'soft', points: 4000, stars: 2, delivered: 1, of: 3, name: 'MARC, 38', touchdownSpeed: 4, offCentre: 6.2, hoverErr: 1.4 };
+    record.rescuesDelivered = 1; record.stars = 2; record.missionScores[1] = 14000;
+    record.score = 14000; record.bestScore = 14000; record.refitPoints = 1; record.bestLandingVs = 0.7;
     flight.x = 0; flight.y = PAD.y + 2; flight.z = PAD.z + 1;
     flight.vx = 0; flight.vy = 0; flight.vz = 0; flight.heading = 0;
     flight.collective = 0.5; flight.fuel = 79; flight.onGround = false;
@@ -325,8 +355,9 @@ window.__kit = {
     winch.phase = 'on-hook'; winch.survivorOnHook = true; flight.survivorOnHook = true;
     winch.cableLen = Math.max(0, flight.y - groundHeight(flight.x, flight.z) - 1.2);
     camMode = 'chase'; camIndex = 0; applyCamVisibility();
-    setMessage('SURVIVOR ON HOOK +500 — REEL IN', 6);
-    radio('SUMMIT CONTROL', 'SURVIVOR ON THE HOOK +500 — REEL HER IN');
+    setMessage('SURVIVOR ON HOOK — REEL HER IN', 6);
+    // No second radio line here: the real hook was already logged during the
+    // flight — re-logging it would print the same line twice in the log.
   },
   // Shot 2 — cockpit in the storm, survivor on the hook, panel lit.
   stageStorm() {
@@ -335,6 +366,10 @@ window.__kit = {
     flight.heading = 0;
     camMode = 'cockpit'; camIndex = 1; applyCamVisibility();
     world.setWeather('storm');
+    // Stage the storm clock at 4:50 — inside the 5:00 threshold where the
+    // STORM CLOSING IN decision appears, so the second decision is visible
+    // in the cockpit shot (the decision logic itself is real, not staged).
+    mission.stormLeft = 290;
     setMessage('SURVIVOR ON HOOK — FLY HER HOME', 6);
   },
   // Shot 3 — proof screen (debrief of the rescue just delivered).

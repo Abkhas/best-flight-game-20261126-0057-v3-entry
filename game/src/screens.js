@@ -91,11 +91,22 @@ export function showProof(lastRescue) {
   $('proof-medal').textContent = medal === '—'
     ? 'NO MEDAL YET — FLY A RESCUE · RANK D · BEST SCORE ' + record.bestScore
     : `★ SESSION MEDAL — ${medal} · RANK ${sessionRank()} · BEST SCORE ${record.bestScore}`;
-  // Debrief headline: the rescue that was just debriefed, with its stars.
+  // Debrief headline: the rescue that was just debriefed, with its stars —
+  // and the survivor's NAME: a named person turns a rescue into a story.
   const r = lastRescue;
   $('proof-headline').textContent = r
-    ? `RESCUE COMPLETE — SURVIVOR ${r.delivered} OF ${r.of} DELIVERED · ${r.stars}★ OF 3 · ${r.verdict.toUpperCase()} LANDING`
+    ? `RESCUE COMPLETE — ${r.name || 'SURVIVOR ' + r.delivered} · SURVIVOR ${r.delivered} OF ${r.of} DELIVERED · ${r.stars}★ OF 3 · ${r.verdict.toUpperCase()} LANDING`
     : 'RESCUE COMPLETE';
+  // Flight recorder chart: altitude (gold) + speed (cyan) over the flight,
+  // drawn from the real recorded time-series. Touchdown plan: the four
+  // measured numbers of the delivery, in large type.
+  drawRecorderChart();
+  const plan = $('touchdown-plan');
+  plan.innerHTML = '<div class="rhead">TOUCHDOWN PLAN — MEASURED AT DELIVERY</div>'
+    + '<div class="trow"><div><div class="lab">SINK</div><div class="val">' + (r ? r.sink.toFixed(1) + ' M/S' : '—') + '</div><div class="sub">SOFT ≤ 3.0 M/S</div></div>'
+    + '<div><div class="lab">SPEED</div><div class="val">' + (r ? r.touchdownSpeed + ' KT' : '—') + '</div><div class="sub">AT TOUCHDOWN</div></div>'
+    + '<div><div class="lab">OFF CENTRELINE</div><div class="val">' + (r ? r.offCentre.toFixed(1) + ' M' : '—') + '</div><div class="sub">FROM PAD CENTRE</div></div>'
+    + '<div><div class="lab">HOVER ERROR</div><div class="val">' + (r && r.hoverErr !== null && r.hoverErr !== undefined ? r.hoverErr.toFixed(1) + ' M' : '—') + '</div><div class="sub">AT HOVER LOCK</div></div></div>';
   const row = $('proof-sorties');
   row.innerHTML = '';
   for (const s of missionMedals()) {
@@ -115,6 +126,50 @@ export function showProof(lastRescue) {
 }
 
 export function showPause() { show('pause-screen'); }
+
+// Flight-recorder chart: two lines from record.recorder — altitude (gold)
+// and speed (cyan) against flight time. Empty until a flight is recorded.
+function drawRecorderChart() {
+  const c = $('recorder-chart');
+  if (!c) return;
+  const g = c.getContext('2d');
+  const W = c.width, H = c.height;
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#04070e'; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#22314a'; g.lineWidth = 1;
+  g.strokeRect(0.5, 0.5, W - 1, H - 1);
+  g.fillStyle = '#7fb8e8'; g.font = 'bold 10px Consolas, monospace'; g.textAlign = 'left';
+  g.fillText('FLIGHT RECORDER — ALTITUDE + SPEED', 8, 14);
+  const rec = record.recorder || [];
+  if (rec.length < 2) {
+    g.fillStyle = '#5a7089'; g.font = '11px Consolas, monospace';
+    g.fillText('NO FLIGHT RECORDED YET — FLY A RESCUE', 8, 60);
+    return;
+  }
+  const t0 = rec[0].t, t1 = rec[rec.length - 1].t || 1;
+  const maxAlt = Math.max(100, ...rec.map((p) => p.alt));
+  const maxSpd = Math.max(10, ...rec.map((p) => p.spd));
+  const X = (t) => 30 + ((t - t0) / Math.max(1, t1 - t0)) * (W - 40);
+  const YA = (a) => H - 18 - (a / maxAlt) * (H - 40);
+  const YS = (s) => H - 18 - (s / maxSpd) * (H - 40);
+  // gridlines
+  g.strokeStyle = 'rgba(60,90,130,0.35)';
+  for (let i = 1; i <= 3; i++) {
+    const y = H - 18 - (i / 4) * (H - 40);
+    g.beginPath(); g.moveTo(30, y); g.lineTo(W - 10, y); g.stroke();
+  }
+  const line = (fn, color) => {
+    g.strokeStyle = color; g.lineWidth = 2; g.beginPath();
+    rec.forEach((p, i) => { const x = X(p.t), y = fn(p); if (i === 0) g.moveTo(x, y); else g.lineTo(x, y); });
+    g.stroke();
+  };
+  line((p) => YA(p.alt), '#ffd27f');
+  line((p) => YS(p.spd), '#7fd8ff');
+  g.font = 'bold 10px Consolas, monospace';
+  g.fillStyle = '#ffd27f'; g.fillText(`ALT ${rec[rec.length - 1].alt} FT`, 8, H - 5);
+  g.fillStyle = '#7fd8ff'; g.fillText(`SPD ${rec[rec.length - 1].spd} KT`, 130, H - 5);
+  g.fillStyle = '#9fc4e8'; g.fillText(`${Math.floor(t1 / 60)}:${String(t1 % 60).padStart(2, '0')} FLOWN`, W - 90, H - 5);
+}
 
 export function showEnd(title, text) {
   $('end-title').textContent = title;

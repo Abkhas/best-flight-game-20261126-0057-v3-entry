@@ -2,15 +2,15 @@
   "shots": [
     {
       "callsign": "LIFT-07",
-      "score": 2200,
+      "score": 22000,
       "missionsFlown": 1,
       "rescued": 1,
       "stars": 2,
-      "flight": "2:53"
+      "flight": "2:54"
     },
     {
       "callsign": "LIFT-07",
-      "score": 2200,
+      "score": 22000,
       "missionsFlown": 1,
       "rescued": 1,
       "stars": 2,
@@ -18,25 +18,25 @@
     },
     {
       "callsign": "LIFT-07",
-      "score": 2200,
+      "score": 22000,
       "missionsFlown": 1,
       "rescued": 1,
       "stars": 2,
-      "flight": "2:53"
+      "flight": "2:54"
     },
     {
       "callsign": "LIFT-07",
-      "score": 2200,
+      "score": 22000,
       "missionsFlown": 1,
       "rescued": 1,
       "stars": 2,
-      "flight": "2:53"
+      "flight": "2:54"
     }
   ],
   "checks": {
     "boot: game object + first frames rendered": {
       "pass": true,
-      "detail": "frames=17"
+      "detail": "frames=16"
     },
     "boot: title screen visible": {
       "pass": true,
@@ -60,47 +60,83 @@
     },
     "play: hover lock earned for real (phase on-hook)": {
       "pass": true,
-      "detail": "phase=on-hook score=800"
+      "detail": "phase=on-hook score=8000"
     },
-    "play: survivor on the hook scores +500 (score >= 800)": {
+    "play: survivor on the hook scores +5000 (score >= 8000)": {
       "pass": true,
-      "detail": "score=800"
+      "detail": "score=8000"
     },
     "play: radio log reports the hook (SUMMIT CONTROL)": {
       "pass": true,
       "detail": ""
     },
-    "play: survivor aboard for real (+200)": {
+    "play: survivor aboard for real (+2000)": {
       "pass": true,
-      "detail": "phase=aboard score=1000"
+      "detail": "phase=aboard score=10000"
     },
     "play: rescue 1 delivered for real (delivered = 1)": {
       "pass": true,
-      "detail": "delivered=1 score=1400"
+      "detail": "delivered=1 score=14000"
     },
-    "play: full rescue scores 1400 (300 lock + 500 hook + 200 aboard + 400 soft)": {
+    "play: full rescue scores 14000 (3000 lock + 5000 hook + 2000 aboard + 4000 soft)": {
       "pass": true,
-      "detail": "score=1400"
+      "detail": "score=14000"
     },
     "play: debrief measures recorded (steadiness, winch time, soft sink)": {
       "pass": true,
-      "detail": "{\"steadiness\":54,\"winchTime\":10.199300000000115,\"sink\":0.700821368541209,\"fuelLeft\":79,\"verdict\":\"soft\",\"points\":400,\"stars\":2,\"delivered\":1,\"of\":3}"
+      "detail": "{\"steadiness\":65,\"winchTime\":9.999900000000132,\"sink\":0.6929013957355034,\"fuelLeft\":79,\"verdict\":\"soft\",\"points\":4000,\"stars\":2,\"delivered\":1,\"of\":3,\"name\":\"MARC, 38\",\"touchdownSpeed\":1,\"offCentre\":3.46950783092335,\"hoverErr\":3.535693169512772}"
     },
     "play: fuel burned (not 100%)": {
       "pass": true,
-      "detail": "fuel=78.84599321999721"
+      "detail": "fuel=78.85767877817709"
     },
     "play: storm clock ticking (under 12:00)": {
       "pass": true,
-      "detail": "stormLeft=611.6908999999738"
+      "detail": "stormLeft=611.751799999975"
     },
-    "play: second survivor on the hook (score 2200)": {
+    "play: second survivor on the hook (score 22000)": {
       "pass": true,
-      "detail": "score=2200 phase=on-hook"
+      "detail": "score=22000 phase=on-hook"
     },
     "legibility: night shot": {
       "pass": true,
       "detail": "[]"
+    },
+    "polish: no radio line truncates (scrollWidth fits)": {
+      "pass": true,
+      "detail": "SUMMIT CONTROL HOVER LOCK — WINCH GOING DOWN 400/400 | SUMMIT CONTROL CABLE DOWN — STAY INSIDE 3 M 400/400 | SUMMIT CONTROL HOOK DOWN — STEADY 63% 400/400 | SUMMIT CONTROL ON THE HOOK +5000 — REEL IN 400/400"
+    },
+    "polish: storm decision banner visible (2nd decision)": {
+      "pass": true,
+      "detail": "STORM CLOSING IN — PRESS 1 ABORT · 2 FINISH THE RESCUE"
+    },
+    "polish: storm decision answers on the real input path (Digit2 = FINISH)": {
+      "pass": true,
+      "detail": "FINISH"
+    },
+    "polish: coaching banner tells the pilot what to do": {
+      "pass": true,
+      "detail": "SURVIVOR ON HOOK — REEL IN WITH SPACE"
+    },
+    "polish: landing-check panel live with targets": {
+      "pass": true,
+      "detail": "LANDING CHECKHOVER 3.4 M ✓ LOCK ≤6 MWINCH 0.0 M/S ✓ <1 M/SSINK 0.0 M/S ✓ <3.0 M/SWIND 4 KT GUSTING"
+    },
+    "polish: chart inset names the valley (river + road + pads)": {
+      "pass": true,
+      "detail": ""
+    },
+    "polish: storm front named on the HUD (live NM)": {
+      "pass": true,
+      "detail": "STORM FRONT — 0.5 NM BEHIND"
+    },
+    "polish: next survivor named on the checklist (ANNA, 41)": {
+      "pass": true,
+      "detail": "RESCUE CHECKLIST — RIDGE RESCUE☑ LOCATE THE BEACON☑ HOVER OVER THE RING☑ LOWER THE WINCH☑ CLIP ON THE SURVIVOR☐ REEL IN — ABOARD☐ FLY HOME TO THE PAD☑ LAND ON THE PADNEXT: ANNA, 41 · 1 / 3 THIS MISSION"
+    },
+    "polish: warning-lights gauge has a lit lamp (STORM / ON HOOK)": {
+      "pass": true,
+      "detail": ""
     },
     "play: cockpit panel lit (7 gauges drawn)": {
       "pass": true,
@@ -112,15 +148,19 @@
     },
     "cover: rescue ring ahead in frame": {
       "pass": true,
-      "detail": "{\"x\":571,\"y\":793,\"visible\":true}"
+      "detail": "{\"x\":569,\"y\":793,\"visible\":true}"
     },
     "cover: lit hospital pad ahead in frame": {
       "pass": true,
-      "detail": "{\"x\":722,\"y\":448,\"visible\":true}"
+      "detail": "{\"x\":721,\"y\":448,\"visible\":true}"
     },
-    "cover: earned score on the HUD (2200, matches the record)": {
+    "cover: earned score on the HUD (22000, matches the record)": {
       "pass": true,
-      "detail": "score=2200"
+      "detail": "score=22000"
+    },
+    "cover: score box does not overlap the storm box (no clipped 22,000)": {
+      "pass": true,
+      "detail": "hud-score L829 R1040 | hud-storm L1064 R1268"
     },
     "cover: rescued progress on the HUD (1/7)": {
       "pass": true,
@@ -128,7 +168,7 @@
     },
     "cover: storm timer on the HUD (counts down from 12:00)": {
       "pass": true,
-      "detail": "09:06"
+      "detail": "04:46"
     },
     "cover: HUD shows altitude + speed + heading + rotor RPM": {
       "pass": true,
@@ -149,6 +189,10 @@
     "cover: winch state on the HUD (ON-HOOK)": {
       "pass": true,
       "detail": ""
+    },
+    "cover: landing-check panel reads a locked hover (✓)": {
+      "pass": true,
+      "detail": "LANDING CHECKHOVER 3.4 M ✓ LOCK ≤6 MWINCH 0.0 M/S ✓ <1 M/SSINK 0.0 M/S ✓ <3.0 M/SWIND 6 KT GUSTING"
     },
     "legibility: cover (no overflow / overlap / out-of-frame)": {
       "pass": true,
@@ -186,6 +230,18 @@
       "pass": true,
       "detail": ""
     },
+    "polish: proof headline names the delivered survivor (MARC, 38)": {
+      "pass": true,
+      "detail": "RESCUE COMPLETE — MARC, 38 · SURVIVOR 1 OF 3 DELIVERED · 2★ OF 3 · SOFT LANDING"
+    },
+    "polish: flight recorder chart drawn from the real time-series": {
+      "pass": true,
+      "detail": ""
+    },
+    "polish: touchdown plan shows 4 measured numbers": {
+      "pass": true,
+      "detail": "TOUCHDOWN PLAN — MEASURED AT DELIVERYSINK0.7 M/SSOFT ≤ 3.0 M/SSPEED1 KTAT TOUCHDOWNOFF CENTRELINE3.5 MFROM PAD CENTREHOVER ERROR3.5 MAT HOVER LOCK"
+    },
     "proof: all 4 missions show a score/medal state": {
       "pass": true,
       "detail": ""
@@ -222,9 +278,13 @@
       "pass": true,
       "detail": ""
     },
+    "polish: count banner in the largest numerals (4 · 7 · 21)": {
+      "pass": true,
+      "detail": "4 MISSIONS·7 SURVIVORS·21 STARS"
+    },
     "consistency: proof vs title record identical": {
       "pass": true,
-      "detail": "[{\"callsign\":\"LIFT-07\",\"score\":2200,\"missionsFlown\":1,\"rescued\":1,\"stars\":2,\"flight\":\"2:53\"},{\"callsign\":\"LIFT-07\",\"score\":2200,\"missionsFlown\":1,\"rescued\":1,\"stars\":2,\"flight\":\"2:53\"}]"
+      "detail": "[{\"callsign\":\"LIFT-07\",\"score\":22000,\"missionsFlown\":1,\"rescued\":1,\"stars\":2,\"flight\":\"2:54\"},{\"callsign\":\"LIFT-07\",\"score\":22000,\"missionsFlown\":1,\"rescued\":1,\"stars\":2,\"flight\":\"2:54\"}]"
     },
     "zero console errors": {
       "pass": true,
@@ -234,21 +294,21 @@
       "pass": true,
       "detail": ""
     },
-    "file: 01-cover.jpg exists (150 KB, ≤256 KiB)": {
+    "file: 01-cover.jpg exists (176 KB, ≤256 KiB)": {
       "pass": true,
-      "detail": "153894 bytes"
+      "detail": "179714 bytes"
     },
-    "file: 02-night.jpg exists (169 KB, ≤256 KiB)": {
+    "file: 02-night.jpg exists (200 KB, ≤256 KiB)": {
       "pass": true,
-      "detail": "172716 bytes"
+      "detail": "204668 bytes"
     },
-    "file: 03-proof.jpg exists (138 KB, ≤256 KiB)": {
+    "file: 03-proof.jpg exists (172 KB, ≤256 KiB)": {
       "pass": true,
-      "detail": "141750 bytes"
+      "detail": "175950 bytes"
     },
-    "file: 04-title.jpg exists (167 KB, ≤256 KiB)": {
+    "file: 04-title.jpg exists (170 KB, ≤256 KiB)": {
       "pass": true,
-      "detail": "171085 bytes"
+      "detail": "173658 bytes"
     },
     "contact sheet built": {
       "pass": true,

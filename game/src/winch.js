@@ -34,6 +34,7 @@ export function freshWinch() {
     winchStart: 0,     // flight seconds when lowering started
     winchTime: null,   // s from lower-start to aboard, null until then
     survivorOnHook: false,
+    lockErr: null,     // m — hover error at the moment the lock was earned
   };
 }
 
@@ -63,10 +64,11 @@ export function updateWinch(w, s, ring, mission, dt, flightSeconds) {
       if (w.lockTimer >= WINCH.lockTime) {
         w.phase = 'lock';
         w.phaseTimer = 0;
-        addScore(300, 'hover lock over the ring', mission.id);
-        radio('SUMMIT CONTROL', 'HOVER LOCK — HOLD HER STEADY, WINCH GOING DOWN');
-        logEvent(`Hover lock over ${ring.label} ring — +300`);
-        return 'HOVER LOCK — WINCH GOING DOWN +300';
+        w.lockErr = err.horiz;
+        addScore(3000, 'hover lock over the ring', mission.id);
+        radio('SUMMIT CONTROL', 'HOVER LOCK — WINCH GOING DOWN');
+        logEvent(`Hover lock over ${ring.label} ring — +3000`);
+        return 'HOVER LOCK — WINCH GOING DOWN +3000';
       }
     } else {
       w.lockTimer = 0;
@@ -79,7 +81,7 @@ export function updateWinch(w, s, ring, mission, dt, flightSeconds) {
     if (!err.inWindow) { w.phase = 'idle'; w.lockTimer = 0; return 'HOVER LOST — BACK OVER THE RING'; }
     w.phase = 'lowering'; w.phaseTimer = 0; w.winchStart = flightSeconds;
     w.steadySamples = 0; w.totalSamples = 0;
-    radio('SUMMIT CONTROL', 'CABLE DOWN — KEEP HER INSIDE THREE METRES');
+    radio('SUMMIT CONTROL', 'CABLE DOWN — STAY INSIDE 3 M');
     return 'WINCH LOWERING — HOLD STEADY';
   }
 
@@ -92,7 +94,7 @@ export function updateWinch(w, s, ring, mission, dt, flightSeconds) {
     if (w.phaseTimer >= WINCH.lowerTime) {
       w.phase = 'clipping'; w.phaseTimer = 0;
       w.hoverSteadiness = w.totalSamples ? Math.round((w.steadySamples / w.totalSamples) * 100) : 0;
-      radio('SUMMIT CONTROL', `HOOK ON THE GROUND — STEADINESS ${w.hoverSteadiness}%`);
+      radio('SUMMIT CONTROL', `HOOK DOWN — STEADY ${w.hoverSteadiness}%`);
       return 'HOOK DOWN — CLIPPING ON';
     }
     return null;
@@ -103,10 +105,10 @@ export function updateWinch(w, s, ring, mission, dt, flightSeconds) {
     if (w.phaseTimer >= WINCH.clipTime) {
       w.phase = 'on-hook'; w.phaseTimer = 0;
       w.survivorOnHook = true; s.survivorOnHook = true;
-      addScore(500, 'survivor on the hook', mission.id);
-      radio('SUMMIT CONTROL', 'SURVIVOR ON THE HOOK +500 — REEL HER IN');
-      logEvent(`Survivor on the hook — +500 (steadiness ${w.hoverSteadiness}%)`);
-      return 'SURVIVOR ON HOOK +500 — REEL IN';
+      addScore(5000, 'survivor on the hook', mission.id);
+      radio('SUMMIT CONTROL', 'ON THE HOOK +5000 — REEL IN');
+      logEvent(`Survivor on the hook — +5000 (steadiness ${w.hoverSteadiness}%)`);
+      return 'SURVIVOR ON HOOK — REEL IN';
     }
     return null;
   }
@@ -127,10 +129,10 @@ export function updateWinch(w, s, ring, mission, dt, flightSeconds) {
       mission.aboard = true;
       w.survivorOnHook = false; s.survivorOnHook = false;
       w.winchTime = flightSeconds - w.winchStart;
-      addScore(200, 'survivor aboard', mission.id);
-      radio('SUMMIT CONTROL', `SURVIVOR ABOARD +200 — WINCH ${w.winchTime.toFixed(1)} S — FLY HOME`);
-      logEvent(`Survivor aboard — +200, winch ${w.winchTime.toFixed(1)} s`);
-      return 'SURVIVOR ABOARD +200 — FLY HOME TO THE PAD';
+      addScore(2000, 'survivor aboard', mission.id);
+      radio('SUMMIT CONTROL', `ABOARD +2000 — FLY HOME`);
+      logEvent(`Survivor aboard — +2000, winch ${w.winchTime.toFixed(1)} s`);
+      return 'SURVIVOR ABOARD +2000 — FLY HOME TO THE PAD';
     }
     return null;
   }

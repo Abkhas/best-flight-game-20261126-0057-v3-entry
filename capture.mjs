@@ -118,7 +118,7 @@ async function main() {
       flight: s.flightMinutes + ':' + Math.floor(s.flightSeconds) }; })()`);
     const legibility = async () => evalJs(`(() => {
       const problems = [];
-      const els = document.querySelectorAll('.hud-box, #hud-msg, #hud-warn, #hud-decision, #radio-log, #checklist, #winch-cam, #hud-wind, #hud-hint, .slot, .pcell, .scell, .controls, .big-btn, #title-screen h1, #title-screen h2, #proof-screen h1, #proof-screen h2, #end-screen h1, .mrow, .base-card, #refit-row');
+      const els = document.querySelectorAll('.hud-box, #hud-msg, #hud-warn, #hud-decision, #hud-coach, #landing-check, #count-banner, #touchdown-plan, #proof-recorder, #radio-log, #checklist, #winch-cam, #hud-wind, #hud-hint, .slot, .pcell, .scell, .controls, .big-btn, #title-screen h1, #title-screen h2, #proof-screen h1, #proof-screen h2, #end-screen h1, .mrow, .base-card, #refit-row');
       for (const el of els) {
         if (getComputedStyle(el).display === 'none') continue;
         const scr = el.closest('.screen');
@@ -207,19 +207,19 @@ async function main() {
     await driveTo(RING.x, RING.y + 24, RING.z, 'hover', (st) => st.phase === 'on-hook', 300000, 'fly to ring + clip 1');
     let st = await state();
     check('play: hover lock earned for real (phase on-hook)', st.phase === 'on-hook', `phase=${st.phase} score=${st.score}`);
-    check('play: survivor on the hook scores +500 (score >= 800)', st.score >= 800, `score=${st.score}`);
+    check('play: survivor on the hook scores +5000 (score >= 8000)', st.score >= 8000, `score=${st.score}`);
     check('play: radio log reports the hook (SUMMIT CONTROL)', await evalJs(`document.getElementById('radio-log').textContent.includes('SUMMIT CONTROL') && document.getElementById('radio-log').textContent.includes('HOOK')`));
     // 2) reel in, then fly home and land soft on the pad
     await evalJs(`window.__kit.reel()`);
     await driveTo(RING.x, RING.y + 30, RING.z, 'hover', (s2) => s2.phase === 'aboard', 30000, 'reel in');
     st = await state();
-    check('play: survivor aboard for real (+200)', st.phase === 'aboard' && st.score >= 1000, `phase=${st.phase} score=${st.score}`);
+    check('play: survivor aboard for real (+2000)', st.phase === 'aboard' && st.score >= 10000, `phase=${st.phase} score=${st.score}`);
     await driveTo(PADP.x, PADP.y + 14, PADP.z, 'hover', (s2) => Math.hypot(s2.x - PADP.x, s2.z - PADP.z) < 12, 300000, 'fly home to the pad');
     await driveTo(PADP.x, PADP.y + 1.2, PADP.z, 'land', (s2) => s2.delivered >= 1, 240000, 'soft pad landing');
     st = await state();
     await evalJs(`window.__kit.clearDrive()`);
     check('play: rescue 1 delivered for real (delivered = 1)', st.delivered === 1, `delivered=${st.delivered} score=${st.score}`);
-    check('play: full rescue scores 1400 (300 lock + 500 hook + 200 aboard + 400 soft)', st.score === 1400, `score=${st.score}`);
+    check('play: full rescue scores 14000 (3000 lock + 5000 hook + 2000 aboard + 4000 soft)', st.score === 14000, `score=${st.score}`);
     check('play: debrief measures recorded (steadiness, winch time, soft sink)', !!st.lastRescue && st.lastRescue.steadiness > 0 && st.lastRescue.winchTime > 0 && st.lastRescue.sink <= 3.0,
       JSON.stringify(st.lastRescue));
     check('play: fuel burned (not 100%)', st.fuel < 99, `fuel=${st.fuel}`);
@@ -228,7 +228,7 @@ async function main() {
     // --- PHASE B: climber 2 — fly back to the ring, hover, clip on ---
     await driveTo(RING.x, RING.y + 24, RING.z, 'hover', (s2) => s2.phase === 'on-hook', 300000, 'fly to ring + clip 2');
     st = await state();
-    check('play: second survivor on the hook (score 2200)', st.score === 2200, `score=${st.score} phase=${st.phase}`);
+    check('play: second survivor on the hook (score 22000)', st.score === 22000, `score=${st.score} phase=${st.phase}`);
 
     // --- SHOT 2: cockpit in the storm, survivor on the hook, panel lit ---
     await setViewport(1280, 993);
@@ -237,6 +237,31 @@ async function main() {
     await shot('02-night.jpg');
     const snap1 = await snapshot();
     check('legibility: night shot', (await legibility()).length === 0, JSON.stringify(await legibility()));
+    check('polish: no radio line truncates (scrollWidth fits)', await evalJs(
+      `[...document.querySelectorAll('#radio-log .rline')].every(el => el.scrollWidth <= el.clientWidth + 1)`),
+      await evalJs(`[...document.querySelectorAll('#radio-log .rline')].map(el => el.textContent + ' ' + el.scrollWidth + '/' + el.clientWidth).join(' | ')`));
+    check('polish: storm decision banner visible (2nd decision)', await evalJs(
+      `document.getElementById('hud-decision').style.display === 'block' && document.getElementById('hud-decision').textContent.includes('STORM CLOSING IN')`),
+      await evalJs(`document.getElementById('hud-decision').textContent`));
+    check('polish: storm decision answers on the real input path (Digit2 = FINISH)', await evalJs(
+      `window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' })); window.__game.save.stormDecision === 'FINISH'`),
+      await evalJs(`window.__game.save.stormDecision`));
+    check('polish: coaching banner tells the pilot what to do', await evalJs(
+      `document.getElementById('hud-coach').textContent.length > 10`),
+      await evalJs(`document.getElementById('hud-coach').textContent`));
+    check('polish: landing-check panel live with targets', await evalJs(
+      `document.getElementById('landing-check').textContent.includes('LANDING CHECK') && document.getElementById('landing-check').textContent.includes('M/S')`),
+      await evalJs(`document.getElementById('landing-check').textContent.replace(/\\s+/g, ' ')`));
+    check('polish: chart inset names the valley (river + road + pads)', await evalJs(
+      `document.querySelector('#winch-cam .rhead').textContent.includes('CHART') && (() => { const c = document.getElementById('winch-cam-c'); const g = c.getContext('2d'); const d = g.getImageData(0,0,c.width,c.height).data; let blue = 0; for (let i = 0; i < d.length; i += 4) if (d[i+2] > d[i] + 40 && d[i+2] > 90) blue++; return blue > 20; })()`));
+    check('polish: storm front named on the HUD (live NM)', await evalJs(
+      `document.getElementById('hud-storm-sub').textContent.includes('STORM FRONT') && document.getElementById('hud-storm-sub').textContent.includes('NM')`),
+      await evalJs(`document.getElementById('hud-storm-sub').textContent`));
+    check('polish: next survivor named on the checklist (ANNA, 41)', await evalJs(
+      `document.getElementById('checklist').textContent.includes('ANNA, 41')`),
+      await evalJs(`document.getElementById('checklist').textContent.replace(/\\s+/g, ' ')`));
+    check('polish: warning-lights gauge has a lit lamp (STORM / ON HOOK)', await evalJs(
+      `(() => { const c = document.getElementById('g-warn'); const g = c.getContext('2d'); const d = g.getImageData(0,0,c.width,c.height).data; let lit = 0; for (let i = 0; i < d.length; i += 40) if (d[i]+d[i+1]+d[i+2] > 420) lit++; return lit > 3; })()`));
     check('play: cockpit panel lit (7 gauges drawn)', await evalJs(
       `['g-att','g-rpm','g-spd','g-alt','g-vs','g-hdg','g-fuel'].every(id => { const c = document.getElementById(id); const g = c.getContext('2d'); const d = g.getImageData(0,0,c.width,c.height).data; let lit = 0; for (let i = 0; i < d.length; i += 400) if (d[i]+d[i+1]+d[i+2] > 60) lit++; return lit > 20; })`));
     check('play: winch-cam inset drawn (ring + heli dot)', await evalJs(
@@ -252,8 +277,11 @@ async function main() {
     const snap0 = await snapshot();
     check('cover: rescue ring ahead in frame', ringPos.visible, JSON.stringify(ringPos));
     check('cover: lit hospital pad ahead in frame', padPos.visible, JSON.stringify(padPos));
-    check('cover: earned score on the HUD (2200, matches the record)', await evalJs(
-      `document.getElementById('hud-score-v').textContent.replace(/,/g,'') === String(window.__game.save.score) && window.__game.save.score === 2200`), `score=${snap0.score}`);
+    check('cover: earned score on the HUD (22000, matches the record)', await evalJs(
+      `document.getElementById('hud-score-v').textContent.replace(/,/g,'') === String(window.__game.save.score) && window.__game.save.score === 22000`), `score=${snap0.score}`);
+    check('cover: score box does not overlap the storm box (no clipped 22,000)', await evalJs(
+      `(() => { const a = document.getElementById('hud-score').getBoundingClientRect(); const b = document.getElementById('hud-storm').getBoundingClientRect(); return a.right + 4 <= b.left; })()`),
+      await evalJs(`(() => { const r = (el) => { const b = document.getElementById(el).getBoundingClientRect(); return el + ' L' + Math.round(b.left) + ' R' + Math.round(b.right); }; return r('hud-score') + ' | ' + r('hud-storm'); })()`));
     check('cover: rescued progress on the HUD (1/7)', await evalJs(`document.getElementById('hud-score-sub').textContent`) === 'RESCUED 1 / 7 · STARS ' + (await evalJs('window.__game.save.stars')) + ' / 21', await evalJs(`document.getElementById('hud-score-sub').textContent`));
     check('cover: storm timer on the HUD (counts down from 12:00)', await evalJs(`document.getElementById('hud-storm-v').textContent`) !== '12:00', await evalJs(`document.getElementById('hud-storm-v').textContent`));
     check('cover: HUD shows altitude + speed + heading + rotor RPM', await evalJs(
@@ -262,6 +290,9 @@ async function main() {
     check('cover: radio log has the named base voice (SUMMIT CONTROL)', await evalJs(`document.getElementById('radio-log').textContent.includes('SUMMIT CONTROL')`));
     check('cover: rescue checklist visible with steps ticked', await evalJs(`document.querySelectorAll('#checklist .cline.done').length >= 3`));
     check('cover: winch state on the HUD (ON-HOOK)', await evalJs(`document.getElementById('hud-winch-v').textContent.includes('ON-HOOK')`));
+    check('cover: landing-check panel reads a locked hover (✓)', await evalJs(
+      `document.getElementById('landing-check').textContent.includes('HOVER') && document.getElementById('landing-check').textContent.includes('✓')`),
+      await evalJs(`document.getElementById('landing-check').textContent.replace(/\\s+/g, ' ')`));
     check('legibility: cover (no overflow / overlap / out-of-frame)', (await legibility()).length === 0, JSON.stringify(await legibility()));
 
     // --- SHOT 3: proof screen ---
@@ -276,13 +307,21 @@ async function main() {
     check('proof: hover steadiness + winch time + landing softness shown', await evalJs(
       `document.querySelector('.pcell:nth-child(2) .val').textContent.includes('%') && document.querySelector('.pcell:nth-child(3) .val').textContent.includes('S') && document.querySelector('.pcell:nth-child(4) .val').textContent.includes('M/S')`));
     check('proof: session medal + rank + BEST score shown (real values)', await evalJs(
-      `document.getElementById('proof-medal').textContent.includes('BEST SCORE 2200') && document.getElementById('proof-medal').textContent.includes('GOLD')`));
+      `document.getElementById('proof-medal').textContent.includes('BEST SCORE 22000') && document.getElementById('proof-medal').textContent.includes('GOLD')`));
     check('proof: rank letter computed from the session', await evalJs(
       `document.getElementById('proof-medal').textContent.includes('RANK A')`));
     check('proof: debrief headline names the delivered survivor', await evalJs(
       `document.getElementById('proof-headline').textContent.includes('SURVIVOR 1 OF 3')`));
     check('proof: incident line from the record (clean session)', await evalJs(
-      `document.getElementById('proof-incident').textContent.includes('INCIDENT LOG — Clean session')`));
+      `document.getElementById('proof-incident').textContent.includes('INCIDENT LOG — CLEAN SESSION') && document.getElementById('proof-incident').textContent.includes('CABLE WEAR') && document.getElementById('proof-incident').textContent.includes('GUST')`));
+    check('polish: proof headline names the delivered survivor (MARC, 38)', await evalJs(
+      `document.getElementById('proof-headline').textContent.includes('MARC, 38')`),
+      await evalJs(`document.getElementById('proof-headline').textContent`));
+    check('polish: flight recorder chart drawn from the real time-series', await evalJs(
+      `(() => { const c = document.getElementById('recorder-chart'); const g = c.getContext('2d'); const d = g.getImageData(0,0,c.width,c.height).data; let gold = 0, blue = 0; for (let i = 0; i < d.length; i += 16) { if (d[i] > 200 && d[i+1] > 180) gold++; if (d[i+2] > 180 && d[i] < 150) blue++; } return gold > 10 && blue > 10; })()`));
+    check('polish: touchdown plan shows 4 measured numbers', await evalJs(
+      `['SINK','SPEED','OFF CENTRELINE','HOVER ERROR'].every(t => document.getElementById('touchdown-plan').textContent.includes(t)) && document.getElementById('touchdown-plan').textContent.includes('M/S')`),
+      await evalJs(`document.getElementById('touchdown-plan').textContent.replace(/\\s+/g, ' ')`));
     check('proof: all 4 missions show a score/medal state', await evalJs(
       `document.querySelectorAll('#proof-sorties .scell').length === 4 && document.getElementById('proof-sorties').textContent.includes('RIDGE RESCUE')`));
     check('proof: pilot-log progress line in the debrief note', await evalJs(
@@ -299,13 +338,16 @@ async function main() {
     check('title: 4 missions with different goals listed', await evalJs(
       `['RIDGE RESCUE','NIGHT MEDEVAC','BLIZZARD RUN','VALLEY FERRY'].every(n => document.getElementById('mission-table').textContent.includes(n))`));
     check('title: mission 1 shows its earned score', await evalJs(
-      `document.getElementById('mission-table').textContent.includes('2200 PTS')`));
+      `document.getElementById('mission-table').textContent.includes('22000 PTS')`));
     check('title: turnaround refit row visible (live points)', await evalJs(
       `document.getElementById('refit-row').textContent.includes('REFIT POINTS: ' + window.__game.save.refitPoints)`));
     check('title: persistent top + bottom bars visible', await evalJs(
       `getComputedStyle(document.getElementById('pbar-top')).display === 'flex' && getComputedStyle(document.getElementById('pbar-bottom')).display === 'flex'`));
     check('title: top bar shows the session score', await evalJs(
-      `document.getElementById('pbar-top-r').textContent.includes('SCORE 2200')`));
+      `document.getElementById('pbar-top-r').textContent.includes('SCORE 22000')`));
+    check('polish: count banner in the largest numerals (4 · 7 · 21)', await evalJs(
+      `[...document.querySelectorAll('#count-banner b')].map(b => b.textContent).join(',') === '4,7,21'`),
+      await evalJs(`document.getElementById('count-banner').textContent`));
 
     // --- Consistency: proof and title show the same pilot record ---
     const same = snap2.callsign === snap3.callsign && snap2.rescued === snap3.rescued

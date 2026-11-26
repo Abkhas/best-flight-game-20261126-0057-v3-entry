@@ -68,6 +68,32 @@ export function buildHelicopter() {
   // glass cockpit bubble + nose searchlight
   const cockpit = new THREE.Mesh(new THREE.SphereGeometry(1.5, 14, 10), glass);
   cockpit.scale.set(0.95, 0.72, 1.05); cockpit.position.set(0, 0.75, -3.1); heli.add(cockpit);
+  // side windows: dark glass panels on both flanks, ahead of the doors
+  for (const s of [-1, 1]) {
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.0),
+      new THREE.MeshPhongMaterial({ color: 0x14283c, specular: 0xffffff, shininess: 180 }));
+    win.position.set(s * 1.72, 0.75, -2.2);
+    win.rotation.y = s * Math.PI / 2;
+    heli.add(win);
+    // sliding-door seam + handle: a thin dark frame behind the window
+    const door = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.9, 2.2),
+      new THREE.MeshPhongMaterial({ color: 0x9aa8b8 }));
+    door.position.set(s * 1.71, 0.3, -0.4); heli.add(door);
+  }
+  // engine deck: the hump behind the mast, with twin exhausts
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.9, 2.6), dark);
+  deck.position.set(0, 1.95, 0.9); heli.add(deck);
+  for (const s of [-1, 1]) {
+    const ex = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 1.4, 8),
+      new THREE.MeshPhongMaterial({ color: 0x4a4a52, specular: 0x888899, shininess: 70 }));
+    ex.rotation.x = Math.PI / 2 - 0.35;
+    ex.position.set(s * 1.25, 1.95, 1.6); heli.add(ex);
+  }
+  // roof antenna mast + rescue hoist arm over the starboard door
+  const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 1.6, 6), dark);
+  antenna.position.set(0, 2.5, -1.6); heli.add(antenna);
+  const hoist = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 2.4), dark);
+  hoist.position.set(1.9, 1.1, 1.2); heli.add(hoist);
   const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8),
     new THREE.MeshBasicMaterial({ color: 0xfff2c0 }));
   lamp.position.set(0, -0.6, -4.6); heli.add(lamp);
@@ -79,6 +105,12 @@ export function buildHelicopter() {
   boom.rotation.x = Math.PI / 2; boom.position.set(0, 0.7, 7.2); heli.add(boom);
   const fin = new THREE.Mesh(new THREE.BoxGeometry(0.25, 2.6, 2.2), red);
   fin.position.set(0, 1.9, 10.6); heli.add(fin);
+  const finStripe = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.5, 2.2),
+    new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  finStripe.position.set(0, 2.5, 10.6); heli.add(finStripe);
+  // horizontal stabilizer at the tail: the silhouette stops reading as a box
+  const stab = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.14, 1.1), white);
+  stab.position.set(0, 1.15, 9.4); heli.add(stab);
   const tailRotor = new THREE.Group();
   for (const a of [0, Math.PI / 2]) {
     const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 3.4, 0.3), dark);
@@ -89,22 +121,24 @@ export function buildHelicopter() {
   // main rotor mast + hub + two long blades + blur disc
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 1.9, 8), dark);
   mast.position.set(0, 2.45, 0); heli.add(mast);
-  // unlit light-grey blades: a Phong underside goes near-black in the
-  // cockpit view (sun above, dark ambient below) and reads as glitch bars.
-  const bladeMat = new THREE.MeshBasicMaterial({ color: 0xb8c0cc });
+  // light-grey blades: a Phong underside goes near-black in the cockpit
+  // view (sun above, dark ambient below) and reads as glitch bars — so the
+  // blades are unlit mid-grey (pale reads as a white wire in chase view)
+  // and the blur disc carries the spin.
+  const bladeMat = new THREE.MeshBasicMaterial({ color: 0x9aa4b4 });
   const rotor = new THREE.Group();
   for (const s of [-1, 1]) {
-    const blade = new THREE.Mesh(new THREE.BoxGeometry(9.6, 0.07, 0.35), bladeMat);
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(9.6, 0.06, 0.3), bladeMat);
     blade.position.x = s * 4.8; rotor.add(blade);
-    const tip = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.14, 0.9), red);
+    const tip = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.8), red);
     tip.position.x = s * 9.2; rotor.add(tip);
   }
   rotor.position.set(0, 3.4, 0); heli.add(rotor);
   const disc = new THREE.Mesh(new THREE.CircleGeometry(9.6, 40),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, depthWrite: false, side: THREE.DoubleSide }));
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.04, depthWrite: false, side: THREE.DoubleSide }));
   disc.rotation.x = -Math.PI / 2; disc.position.y = 3.42; heli.add(disc);
 
-  // skids
+  // skids + cross tubes: the undercarriage reads as a frame, not two sticks
   for (const s of [-1, 1]) {
     const skid = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 7.6, 6), dark);
     skid.rotation.x = Math.PI / 2; skid.position.set(s * 1.5, -1.55, 0); heli.add(skid);
@@ -112,6 +146,10 @@ export function buildHelicopter() {
       const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.1, 6), dark);
       strut.position.set(s * 1.5, -1.05, z); heli.add(strut);
     }
+  }
+  for (const z of [-2.4, 2.4]) {
+    const cross = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 3.0, 6), dark);
+    cross.rotation.z = Math.PI / 2; cross.position.set(0, -1.55, z); heli.add(cross);
   }
   // winch drum under the belly + cable + hook (cable scales with length)
   const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.1, 10), dark);
