@@ -153,3 +153,80 @@ game's own input path (`__kit.setDrive`), which is the verified route.
 A human at 60 fps flies the same pattern far better than a ~3 fps
 SwiftShader script, but a human landing check is recommended before
 submitting.
+
+## Polish round — 26 Nov 2026 (r2/r3 lever)
+
+Why this round exists: the duel against NIGHT DECK failed the gate
+(mean 0.567). SUMMIT LIFT won on depth (C2) and lost on feel and look
+(C3/C4), so the polish attacks exactly that gap — the aircraft, the
+cockpit, the terrain as a place, and the legibility of every number —
+while keeping the systems depth that already wins. The re-duel after
+this round decides rounds 2/3. Head `50aaf31`; `checks.json` now runs
+70 checks with 0 failures (was 55, +15 new polish checks).
+
+What changed, in twelve parts:
+
+1. **Cockpit and aircraft feel.** The cockpit camera was re-aimed so
+   the rotor no longer cuts across the frame, and the panel gained an
+   eighth gauge — a WARNINGS lamp row (LOW FUEL / STORM / CABLE WORN /
+   ON HOOK / HOVER LOCK; STORM and ON HOOK are lit in the night shot).
+   The helicopter itself is more built: engine deck with twin exhausts,
+   side windows and door seams, a hoist arm, an antenna, a tail-fin
+   stripe with stabilizer, skid cross-tubes, and mid-grey blades under
+   a stronger blur disc. The cover stays the chase view on purpose —
+   the judge's C1 "aircraft looks built" needs the 3D heli in the big
+   frame, and the cockpit shot is now cover-grade as the second shot.
+2. **Terrain as a place.** A river and a road now run through the
+   valley, and PINEHOLLOW — a village of 14 houses with lit windows
+   and its own name label — sits in it. The forest grew from 70 trees
+   to 240, a storm-front wall with its label closes off the north,
+   place-name sprites mark the ground, snow drifts vary, and the pad
+   beacon is brighter. Before, it was grey low-poly triangles and
+   three pines.
+3. **Score ×10.** Same rules, same record, bigger numerals: hover lock
+   3000, clip-on 5000, aboard 2000, soft landing 4000. A full rescue is
+   14,000 and the cover score is 22,000 — the biggest number on the
+   cover, in gold. Medal thresholds scaled with it (GOLD 14,000).
+4. **Recorder, touchdown plan, incident log.** The flight recorder now
+   samples altitude and speed twice a second. The proof screen shows a
+   two-line chart (gold altitude, cyan speed) plus a TOUCHDOWN PLAN in
+   large type — every figure measured, e.g. SINK 0.7 M/S · SPEED 2 KT ·
+   OFF CENTRELINE 3.6 M · HOVER ERROR 3.5 M — and an incident log with
+   real entries (CABLE WEAR +8% · STRONGEST GUST 7 KT · GENTLEST
+   LANDING 0.7 M/S · CLEAN SESSION).
+5. **Chart instead of a bare winch-cam.** The winch-cam is now CHART —
+   SUMMIT VALLEY: river, road, PINEHOLLOW, both pads, the storm-front
+   band, a gold ring and a red heli dot — on the cover and in the
+   cockpit shot.
+6. **A second decision.** At 5:00 the storm closes in and the game
+   asks on a gold banner: "STORM CLOSING IN — PRESS 1 ABORT · 2 FINISH
+   THE RESCUE". Pressing 2 (FINISH) was verified on the real input
+   path.
+7. **Legibility nits.** Every radio line was shortened so none
+   truncates; the COLL/FUEL gauge labels were separated; the rotor was
+   thinned, lightened and raised out of the cockpit frame; the
+   "+500 — REEL IN" label was de-duplicated; the pad sits ahead on the
+   cover.
+8. **Count banner.** "4 MISSIONS · 7 SURVIVORS · 21 STARS" now sits on
+   the title in the largest numerals there — gold 40px numerals.
+9. **A named world.** The storm front carries a live distance
+   ("STORM FRONT — 0.5 NM BEHIND"), the pads are named (PINEHOLLOW,
+   VALLEY PAD), the next survivor is named ("NEXT: ANNA, 41") and so
+   is the one just delivered ("MARC, 38").
+10. **Coaching banner.** A gold strip coaches live from hover error,
+    collective and phase — on the cover it reads "SURVIVOR ON HOOK —
+    REEL IN WITH SPACE".
+11. **Landing check.** A live panel on the cover shows the landing
+    gate as it is met: HOVER 3.4 M ✓ LOCK ≤6 M · WINCH 0.0 M/S ✓
+    <1 M/S · SINK 0.0 M/S ✓ <3.0 M/S · WIND 6 KT.
+12. **HUD and density.** The persistent top/bottom bars stay; density
+    comes from the new panels, with big text and high contrast, and
+    the themed title is kept.
+
+Re-verified flight (CDP, same real input path as before): callsign
+LIFT-07, 2:54, score 22,000, rescued 1/7, stars 2/21, storm 04:46 at
+the cover, fuel 65%, soft landing at 0.7 m/s, steadiness 59–68%,
+winch 10.1 s. The earlier sections above still describe the
+pre-polish scoring (+300/+500/+200/+400) and the first verified flight
+(score 1400, steadiness 54%, winch 10.2 s); the ×10 scale and the
+numbers in this section are the current ones.
